@@ -45,4 +45,5 @@ public class MyGdxGame extends Game implements ApplicationListener {
 	public void resume() {
 		super.resume();
 	}
+	//test1
 }
