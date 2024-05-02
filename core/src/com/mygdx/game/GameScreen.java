@@ -60,13 +60,16 @@ public class GameScreen implements Screen {
         this.player = new Player(this.game);
 
         mapSprite = new Sprite(new Texture(Gdx.files.internal("Background/B1.png")));
-        mapSprite.setPosition(0, 0);
-        mapSprite.setSize(100, 100);
+        mapSprite.setPosition(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+        mapSprite.setSize(700, 700);
 
 
         //camera
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
+        camera = new OrthographicCamera(w, h);
+        camera.position.set(w/2 , h/2, 0);
+        camera.update();
 
 
 
@@ -101,6 +104,9 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        camera.position.set(player.x, player.y, 0);
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
 
         //begin batch
         batch.begin();
@@ -114,6 +120,8 @@ public class GameScreen implements Screen {
 
 
         batch.end();
+
+
 
         //begin ui batch
         uiBatch.begin();
@@ -136,6 +144,7 @@ public class GameScreen implements Screen {
 
         //update player
         this.player.update();
+
 
         //check input
         boolean checkTouch = Gdx.input.isTouched();
@@ -186,6 +195,9 @@ public class GameScreen implements Screen {
     }
     @Override
     public void resize(int width, int height) {
+        camera.viewportWidth = 30f;
+        camera.viewportHeight = 30f * height/width;
+        camera.update();
 
     }
     @Override

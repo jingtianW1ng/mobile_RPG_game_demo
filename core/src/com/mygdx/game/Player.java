@@ -15,8 +15,8 @@ public class Player {
 
 
 
-    float x = 0;
-    float y = 0;
+    float x = Gdx.graphics.getWidth()/2;
+    float y = Gdx.graphics.getHeight()/2;
     float frame = 0;
     float moveSpeed = 12;
     boolean moveLeft = false;
@@ -37,7 +37,9 @@ public class Player {
 
         for(int i = 0; i < 6; i++){
             this.playerIdelLeft[i] = new Texture("Player/Idel_left/player_IL" + (i) +".png");
+
         }
+
 
     }
 
