@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,6 +18,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import org.w3c.dom.Text;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+
 public class GameScreen implements Screen {
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
@@ -30,6 +36,7 @@ public class GameScreen implements Screen {
     Texture buttonLongDownTexture;
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
+    Sprite mapSprite;
 
     OrthographicCamera camera;
 
@@ -52,14 +59,15 @@ public class GameScreen implements Screen {
         //create player
         this.player = new Player(this.game);
 
+        mapSprite = new Sprite(new Texture(Gdx.files.internal("Background/B1.png")));
+        mapSprite.setPosition(0, 0);
+        mapSprite.setSize(100, 100);
+
+
         //camera
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, w/h * 20, 20);
-        //camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 10);
-        camera.position.x = 16;
-        camera.position.y = 16;
+
 
 
 
@@ -93,8 +101,6 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
 
         //begin batch
         batch.begin();
@@ -103,7 +109,9 @@ public class GameScreen implements Screen {
         //draw background here
         stage.getBatch().end();
 
+        mapSprite.draw(batch);
         this.player.render(batch);
+
 
         batch.end();
 
@@ -128,9 +136,6 @@ public class GameScreen implements Screen {
 
         //update player
         this.player.update();
-
-        camera.translate(player.x, player.y);
-
 
         //check input
         boolean checkTouch = Gdx.input.isTouched();
@@ -161,6 +166,7 @@ public class GameScreen implements Screen {
         }
         if(moveUp.isDown){
             player.moveUp = true;
+
         }
 
         if(mainmenuButton.isDown){
@@ -179,7 +185,9 @@ public class GameScreen implements Screen {
         buttonLongDownTexture.dispose();
     }
     @Override
-    public void resize(int width, int height) { }
+    public void resize(int width, int height) {
+
+    }
     @Override
     public void pause() { }
     @Override

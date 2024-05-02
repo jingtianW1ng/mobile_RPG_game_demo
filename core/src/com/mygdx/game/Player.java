@@ -5,13 +5,15 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
-
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Player {
 
     MyGdxGame game;
     GameScreen gameScreen;
+
+
 
     float x = 0;
     float y = 0;
@@ -68,6 +70,7 @@ public class Player {
 
     public void render(Batch batch){
         batch.draw(this.playerIdelLeft[(int)this.frame],this.x,this.y);
+
 
     }
 
