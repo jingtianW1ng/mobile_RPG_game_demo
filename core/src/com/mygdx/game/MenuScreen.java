@@ -97,7 +97,11 @@ public class MenuScreen implements Screen{
 
     }
     @Override
-    public void dispose() { }
+    public void dispose() {
+        batch.dispose();
+        buttonLongTexture.dispose();
+        buttonLongDownTexture.dispose();
+    }
     @Override
     public void resize(int width, int height) { }
     @Override

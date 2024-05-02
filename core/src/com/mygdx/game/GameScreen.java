@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -20,13 +21,25 @@ public class GameScreen implements Screen {
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
 
+    public enum GameState { PLAYING, COMPLETE };
+    GameState gameState = GameState.PLAYING;
     SpriteBatch batch;
     SpriteBatch uiBatch;
     Stage stage;
     Texture buttonLongTexture;
     Texture buttonLongDownTexture;
+    Texture buttonSquareTexture;
+    Texture buttonSquareDownTexture;
+
+    OrthographicCamera camera;
+
+    Player player;
 
     Button mainmenuButton;
+    GameButton moveUp;
+    GameButton moveDown;
+    GameButton moveLeft;
+    GameButton moveRight;
 
 
 
@@ -35,15 +48,41 @@ public class GameScreen implements Screen {
     }
     public void create() {
         Gdx.app.log("MenuScreen: ","menuScreen create");
+
+        //create player
+        this.player = new Player(this.game);
+
+        //camera
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, w/h * 20, 20);
+        //camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 10);
+        camera.position.x = 16;
+        camera.position.y = 16;
+
+
+
+        //create batch and stage
         batch = new SpriteBatch();
         uiBatch = new SpriteBatch();
         stage = new Stage();
 
 
+        //create button texture
+        buttonSquareTexture = new Texture("UI/buttonSquare_blue.png");
+        buttonSquareDownTexture = new Texture("UI/buttonSquare_beige_pressed.png");
         buttonLongTexture = new Texture("UI/buttonLong_blue.png");
         buttonLongDownTexture = new Texture("UI/buttonLong_beige_pressed.png");
 
+
+        //create buttons
         mainmenuButton = new Button ("Main Menu",Gdx.graphics.getWidth()/2-300,Gdx.graphics.getHeight()/2-90, 600, 180, buttonLongTexture, buttonLongDownTexture);
+        float buttonSize = h * 0.2f;
+        moveLeft = new GameButton(0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveRight = new GameButton(buttonSize*2, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveDown = new GameButton(buttonSize, 0.0f, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveUp = new GameButton(buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
 
 
 
@@ -54,33 +93,91 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
+        //begin batch
         batch.begin();
 
         stage.getBatch().begin();
         //draw background here
         stage.getBatch().end();
 
+        this.player.render(batch);
+
         batch.end();
 
+        //begin ui batch
         uiBatch.begin();
-        mainmenuButton.draw(uiBatch);
+        switch(gameState) {
+            //if gameState is Running: Draw Controls
+            case PLAYING:
+                moveLeft.draw(uiBatch);
+                moveRight.draw(uiBatch);
+                moveDown.draw(uiBatch);
+                moveUp.draw(uiBatch);
+                break;
+            //if gameState is Complete: Draw Restart button
+            case COMPLETE:
+                mainmenuButton.draw(uiBatch);
+                break;
+        }
         uiBatch.end();
     }
     public void update(){
+
+        //update player
+        this.player.update();
+
+        camera.translate(player.x, player.y);
+
+
+        //check input
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();
         int touchY = Gdx.input.getY();
+        switch (gameState) {
 
-        mainmenuButton.update(checkTouch, touchX, touchY);
+            case PLAYING:
+                moveLeft.update(checkTouch, touchX, touchY);
+                moveRight.update(checkTouch, touchX, touchY);
+                moveDown.update(checkTouch, touchX, touchY);
+                moveUp.update(checkTouch, touchX, touchY);
+                break;
+            case COMPLETE:
+                mainmenuButton.update(checkTouch, touchX, touchY);
+                break;
+
+        }
+
+        if(moveLeft.isDown){
+            player.moveLeft = true;
+        }
+        if(moveRight.isDown){
+            player.moveRight = true;
+        }
+        if(moveDown.isDown){
+            player.moveDown = true;
+        }
+        if(moveUp.isDown){
+            player.moveUp = true;
+        }
 
         if(mainmenuButton.isDown){
             game.setScreen(MyGdxGame.menuScreen);
         }
 
 
+
+
     }
     @Override
-    public void dispose() { }
+    public void dispose() {
+        batch.dispose();
+        this.player.dispose();
+        buttonLongTexture.dispose();
+        buttonLongDownTexture.dispose();
+    }
     @Override
     public void resize(int width, int height) { }
     @Override
