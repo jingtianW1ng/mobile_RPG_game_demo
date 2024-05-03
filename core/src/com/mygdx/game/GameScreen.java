@@ -41,7 +41,7 @@ public class GameScreen implements Screen {
     GameState gameState = GameState.PLAYING;
 
     //speed
-    public static final float MOVEMENT_SPEED = 200.0f;
+    public static final float MOVEMENT_SPEED = 100.0f;
 
     //Map and rendering
     SpriteBatch spriteBatch;
@@ -192,15 +192,24 @@ public class GameScreen implements Screen {
                 if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || moveLeftButton.isDown) {
                     moveLeftButton.isDown = true;
                     moveX -= 1f;
+                    player.setState(Player.PlayerState.walkLeft);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || moveRightButton.isDown) {
                     moveRightButton.isDown = true;
                     moveX += 1f;
+                    player.setState(Player.PlayerState.walkRight);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || moveDownButton.isDown) {
                     moveDownButton.isDown = true;
                     moveY -= 1f;
+                    if(player.state == Player.PlayerState.walkLeft ||player.state == Player.PlayerState.idleLeft){
+                        player.setState(Player.PlayerState.walkLeft);
+                    }else {player.setState(Player.PlayerState.walkRight);}
+
                 } else if (Gdx.input.isKeyPressed(Input.Keys.UP) || moveUpButton.isDown) {
                     moveUpButton.isDown = true;
                     moveY += 1f;
+                    if(player.state == Player.PlayerState.walkLeft ||player.state == Player.PlayerState.idleLeft){
+                        player.setState(Player.PlayerState.walkLeft);
+                    }else {player.setState(Player.PlayerState.walkRight);}
                 }
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
