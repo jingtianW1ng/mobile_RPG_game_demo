@@ -9,71 +9,33 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Player {
-
-    MyGdxGame game;
-    GameScreen gameScreen;
-
-
-
-    float x = Gdx.graphics.getWidth()/2;
-    float y = Gdx.graphics.getHeight()/2;
-    float frame = 0;
-    float moveSpeed = 12;
-    boolean moveLeft = false;
-    boolean moveRight = false;
-    boolean moveUp = false;
-    boolean moveDown = false;
-    boolean die;
+    Texture characterTexture;
+    float characterX;
+    float characterY;
 
 
-
-
-    Texture[] playerIdelLeft = new Texture[6];
-
-
-
+    //player movement delta
+    float dt;
+    Vector2 playerDelta;
 
     public Player (MyGdxGame game ){
+        //texture goes here
+        playerDelta = new Vector2();
+        characterTexture = new Texture("Player/Idel_right/player_IR0.png");
 
-        for(int i = 0; i < 6; i++){
-            this.playerIdelLeft[i] = new Texture("Player/Idel_left/player_IL" + (i) +".png");
+        //animation
 
-        }
-
-
+        //rectangle
     }
 
 
 
     public void update(){
         float dt = Gdx.graphics.getDeltaTime();
-        this.frame += 20*dt;
-        if (this.frame>=6){
-            this.frame=0;
-        }
-        if(moveLeft){
-            x -= moveSpeed;
-            moveLeft = false;
-        }
-        if(moveRight){
-            x += moveSpeed;
-            moveRight = false;
-        }
-        if(moveDown){
-            y -= moveSpeed;
-            moveDown = false;
-        }
-        if(moveUp){
-            y += moveSpeed;
-            moveUp = false;
-        }
-
     }
 
     public void render(Batch batch){
-        batch.draw(this.playerIdelLeft[(int)this.frame],this.x,this.y);
-
-
+        batch.draw(characterTexture, characterX, characterY, 16, 16);
     }
 
     public Rectangle getBoundingBox(){
@@ -83,6 +45,7 @@ public class Player {
 
     public void dispose(){
         //this.texture.dispose();
+        characterTexture.dispose();
     }
 
 

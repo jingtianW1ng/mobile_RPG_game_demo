@@ -3,11 +3,19 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -24,31 +32,43 @@ import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen implements Screen {
+
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
 
     public enum GameState { PLAYING, COMPLETE };
-    GameState gameState = GameState.PLAYING;
-    SpriteBatch batch;
-    SpriteBatch uiBatch;
-    Stage stage;
-    Texture buttonLongTexture;
-    Texture buttonLongDownTexture;
-    Texture buttonSquareTexture;
-    Texture buttonSquareDownTexture;
-    Sprite mapSprite;
 
+    GameState gameState = GameState.PLAYING;
+
+    //speed
+    public static final float MOVEMENT_SPEED = 200.0f;
+
+    //Map and rendering
+    SpriteBatch spriteBatch;
+    SpriteBatch uiBatch; //Second SpriteBatch without camera transforms, for drawing UI
+    TiledMap tiledMap;
+    TiledMapRenderer tiledMapRenderer;
     OrthographicCamera camera;
 
+    //Player Character
     Player player;
-
-    Button mainmenuButton;
-    GameButton moveUp;
-    GameButton moveDown;
-    GameButton moveLeft;
-    GameButton moveRight;
+    float dt = Gdx.graphics.getDeltaTime();
 
 
+    //UI textures
+    Texture buttonSquareTexture;
+    Texture buttonSquareDownTexture;
+    Texture buttonLongTexture;
+    Texture buttonLongDownTexture;
+
+    //UI Buttons
+    Button moveLeftButton;
+    Button moveRightButton;
+    Button moveDownButton;
+    Button moveUpButton;
+    Button restartButton;
+    //Just use this to only restart when the restart button is released instead of immediately as it's pressed
+    boolean restartActive;
 
     public GameScreen(MyGdxGame game) {
         this.game = game;
@@ -56,148 +76,181 @@ public class GameScreen implements Screen {
     public void create() {
         Gdx.app.log("MenuScreen: ","menuScreen create");
 
-        //create player
-        this.player = new Player(this.game);
+        //Rendering
+        spriteBatch = new SpriteBatch();
+        uiBatch = new SpriteBatch();
 
-        mapSprite = new Sprite(new Texture(Gdx.files.internal("Background/B1.png")));
-        mapSprite.setPosition(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
-        mapSprite.setSize(700, 700);
+        //TODO Initiate the TiledMap and its renderer
+        tiledMap = new TmxMapLoader().load("Background/testMap.tmx");
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
-
-        //camera
+        //Camera
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
-        camera = new OrthographicCamera(w, h);
-        camera.position.set(w/2 , h/2, 0);
-        camera.update();
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, w / 9, h / 9);
 
-
-
-
-        //create batch and stage
-        batch = new SpriteBatch();
-        uiBatch = new SpriteBatch();
-        stage = new Stage();
-
-
-        //create button texture
+        //player
+        player = new Player(this.game);
+        //Texture
         buttonSquareTexture = new Texture("UI/buttonSquare_blue.png");
         buttonSquareDownTexture = new Texture("UI/buttonSquare_beige_pressed.png");
         buttonLongTexture = new Texture("UI/buttonLong_blue.png");
         buttonLongDownTexture = new Texture("UI/buttonLong_beige_pressed.png");
 
-
-        //create buttons
-        mainmenuButton = new Button ("Main Menu",Gdx.graphics.getWidth()/2-300,Gdx.graphics.getHeight()/2-90, 600, 180, buttonLongTexture, buttonLongDownTexture);
+        //Buttons
         float buttonSize = h * 0.2f;
-        moveLeft = new GameButton(0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
-        moveRight = new GameButton(buttonSize*2, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
-        moveDown = new GameButton(buttonSize, 0.0f, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
-        moveUp = new GameButton(buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveLeftButton = new Button("",0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveRightButton = new Button("", buttonSize*2, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveDownButton = new Button("", buttonSize, 0.0f, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+        restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
-
-
-
+        newGame();
     }
+
+    private void newGame() {
+        gameState = GameState.PLAYING;
+
+        //Translate camera to center of screen
+        camera.position.x = 30; //The 16 is half the size of a tile
+        camera.position.y = 30;
+
+        //Player start location, you can have this stored in the tilemaze using an object layer.
+        player.characterX = 120;
+        player.characterY = 120;
+
+        camera.translate(player.characterX, player.characterY);
+        restartActive = false;
+    }
+
+
     public void render(float f) {
-        this.update();
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        //set dt
+        dt = Gdx.graphics.getDeltaTime();
+
+        //Update the Game State
+        update();
+
+        //Clear the screen before drawing.
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA); //Allows transparent sprites/tiles
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.position.set(player.x, player.y, 0);
         camera.update();
-        batch.setProjectionMatrix(camera.combined);
 
-        //begin batch
-        batch.begin();
+        //TODO Render Map Here
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
 
-        stage.getBatch().begin();
-        //draw background here
-        stage.getBatch().end();
+        //Draw Character
+        //Apply the camera's transform to the SpriteBatch so the character is drawn in the correct
+        //position on screen.
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+        //TODO player draw
+        player.render(spriteBatch);
+        spriteBatch.end();
 
-        mapSprite.draw(batch);
-        this.player.render(batch);
-
-
-        batch.end();
-
-
-
-        //begin ui batch
+        //Draw UI
         uiBatch.begin();
         switch(gameState) {
             //if gameState is Running: Draw Controls
             case PLAYING:
-                moveLeft.draw(uiBatch);
-                moveRight.draw(uiBatch);
-                moveDown.draw(uiBatch);
-                moveUp.draw(uiBatch);
+                moveLeftButton.draw(uiBatch);
+                moveRightButton.draw(uiBatch);
+                moveDownButton.draw(uiBatch);
+                moveUpButton.draw(uiBatch);
                 break;
             //if gameState is Complete: Draw Restart button
             case COMPLETE:
-                mainmenuButton.draw(uiBatch);
+                restartButton.draw(uiBatch);
                 break;
         }
         uiBatch.end();
     }
     public void update(){
-
-        //update player
-        this.player.update();
-
-
-        //check input
+        //player update
+        player.update();
+        //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();
         int touchY = Gdx.input.getY();
+
+        //Update Game State based on input
         switch (gameState) {
 
             case PLAYING:
-                moveLeft.update(checkTouch, touchX, touchY);
-                moveRight.update(checkTouch, touchX, touchY);
-                moveDown.update(checkTouch, touchX, touchY);
-                moveUp.update(checkTouch, touchX, touchY);
+                //Poll user for input
+                moveLeftButton.update(checkTouch, touchX, touchY);
+                moveRightButton.update(checkTouch, touchX, touchY);
+                moveDownButton.update(checkTouch, touchX, touchY);
+                moveUpButton.update(checkTouch, touchX, touchY);
+
+                float moveX = 0;
+                float moveY = 0;
+                if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || moveLeftButton.isDown) {
+                    moveLeftButton.isDown = true;
+                    moveX -= 1f;
+                } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || moveRightButton.isDown) {
+                    moveRightButton.isDown = true;
+                    moveX += 1f;
+                } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || moveDownButton.isDown) {
+                    moveDownButton.isDown = true;
+                    moveY -= 1f;
+                } else if (Gdx.input.isKeyPressed(Input.Keys.UP) || moveUpButton.isDown) {
+                    moveUpButton.isDown = true;
+                    moveY += 1f;
+                }
+
+                player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
+                Gdx.app.log("sb: ","delta x: " + player.playerDelta.x);
+                player.playerDelta.y = moveY * MOVEMENT_SPEED * dt;
+
+                if (player.playerDelta.len2() > 0) { //Don't do anything if we're not moving
+                    //Retrieve Collision layer
+                    MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
+                    TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
+
+                    //TODO Determine bounds to check within
+
+                    //TODO Loop through selected tiles and correct by each axis
+                    //EXTRA: Try counting down if moving left or down instead of counting up
+
+                    //TODO Move player and camera
+                    //playerSprite.translate(playerDelta.x, playerDelta.y);
+                    player.characterX += player.playerDelta.x;
+                    player.characterY += player.playerDelta.y;
+                    camera.translate(player.playerDelta);
+                }
+
+                //TODO Check if player has met the winning condition
+
                 break;
+
             case COMPLETE:
-                mainmenuButton.update(checkTouch, touchX, touchY);
+                //Poll for input
+                restartButton.update(checkTouch, touchX, touchY);
+
+                if (Gdx.input.isKeyPressed(Input.Keys.DPAD_CENTER) || restartButton.isDown) {
+                    restartButton.isDown = true;
+                    restartActive = true;
+                } else if (restartActive) {
+                    newGame();
+                }
                 break;
-
         }
-
-        if(moveLeft.isDown){
-            player.moveLeft = true;
-        }
-        if(moveRight.isDown){
-            player.moveRight = true;
-        }
-        if(moveDown.isDown){
-            player.moveDown = true;
-        }
-        if(moveUp.isDown){
-            player.moveUp = true;
-
-        }
-
-        if(mainmenuButton.isDown){
-            game.setScreen(MyGdxGame.menuScreen);
-        }
-
-
-
-
     }
     @Override
     public void dispose() {
-        batch.dispose();
-        this.player.dispose();
+        tiledMap.dispose();
+        buttonSquareTexture.dispose();
+        buttonSquareDownTexture.dispose();
         buttonLongTexture.dispose();
         buttonLongDownTexture.dispose();
     }
     @Override
     public void resize(int width, int height) {
-        camera.viewportWidth = 30f;
-        camera.viewportHeight = 30f * height/width;
-        camera.update();
 
     }
     @Override
