@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.Array;
 
 public class Player {
 
-    //player state
+    //playerstate
     enum PlayerState
     {
         walkLeft,
