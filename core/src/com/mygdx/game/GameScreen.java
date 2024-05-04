@@ -36,7 +36,7 @@ public class GameScreen implements Screen {
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
 
-    public enum GameState { PLAYING, COMPLETE };
+    public enum GameState { PLAYING, PAUSED, COMPLETE };
 
     GameState gameState = GameState.PLAYING;
 
@@ -61,6 +61,14 @@ public class GameScreen implements Screen {
     Texture buttonLongTexture;
     Texture buttonLongDownTexture;
 
+    // pause button textures
+    Texture pauseButtonTexture;
+    Texture pauseButtonPressedTexture;
+    Texture menuButtonTexture;
+    Texture menuButtonPressedTexture;
+
+
+
     //UI Buttons
     Button moveLeftButton;
     Button moveRightButton;
@@ -68,11 +76,18 @@ public class GameScreen implements Screen {
     Button moveUpButton;
     Button restartButton;
     //Just use this to only restart when the restart button is released instead of immediately as it's pressed
+
+    Button pauseButton;
+    Button resumeButton;
+    Button exitToMainMenuButton;
+    boolean isResumeButtonDown = false;
+    boolean isExitButtonDown = false;
+    boolean isPauseButtonDown = false;
+
     boolean restartActive;
 
-    public GameScreen(MyGdxGame game) {
-        this.game = game;
-    }
+
+    public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
         Gdx.app.log("MenuScreen: ","menuScreen create");
 
@@ -98,6 +113,12 @@ public class GameScreen implements Screen {
         buttonLongTexture = new Texture("UI/buttonLong_blue.png");
         buttonLongDownTexture = new Texture("UI/buttonLong_beige_pressed.png");
 
+        pauseButtonTexture = new Texture("UI/new_ui/pause_button.png");
+        pauseButtonPressedTexture = new Texture("UI/new_ui/pause_button_press.png");
+
+        menuButtonTexture = new Texture("UI/new_ui/menu_button.png");
+        menuButtonPressedTexture = new Texture("UI/new_ui/menu_button_press.png");
+
         //Buttons
         float buttonSize = h * 0.2f;
         moveLeftButton = new Button("",0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -106,6 +127,9 @@ public class GameScreen implements Screen {
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
+        pauseButton = new Button("", 10, Gdx.graphics.getHeight() - pauseButtonTexture.getHeight() - 250, buttonSize, buttonSize,pauseButtonTexture,pauseButtonPressedTexture);
+        resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
+        exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         newGame();
     }
 
@@ -161,6 +185,12 @@ public class GameScreen implements Screen {
                 moveRightButton.draw(uiBatch);
                 moveDownButton.draw(uiBatch);
                 moveUpButton.draw(uiBatch);
+                pauseButton.draw(uiBatch);
+                break;
+            //if gameState is Paused: Draw buttons
+            case PAUSED:
+                resumeButton.draw(uiBatch);
+                exitToMainMenuButton.draw(uiBatch);
                 break;
             //if gameState is Complete: Draw Restart button
             case COMPLETE:
@@ -186,6 +216,7 @@ public class GameScreen implements Screen {
                 moveRightButton.update(checkTouch, touchX, touchY);
                 moveDownButton.update(checkTouch, touchX, touchY);
                 moveUpButton.update(checkTouch, touchX, touchY);
+                pauseButton.update(checkTouch,touchX,touchY);
 
                 float moveX = 0;
                 float moveY = 0;
@@ -209,8 +240,12 @@ public class GameScreen implements Screen {
                     moveY += 1f;
                     if(player.state == Player.PlayerState.walkLeft ||player.state == Player.PlayerState.idleLeft){
                         player.setState(Player.PlayerState.walkLeft);
-                    }else {player.setState(Player.PlayerState.walkRight);}
+                    } else {player.setState(Player.PlayerState.walkRight);}
+                } else if (Gdx.input.isKeyPressed(Input.Keys.UP) || pauseButton.isDown) {
+                    gameState = GameState.PAUSED;
+                    isPauseButtonDown = true;
                 }
+
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
                 Gdx.app.log("sb: ","delta x: " + player.playerDelta.x);
@@ -233,8 +268,22 @@ public class GameScreen implements Screen {
                     camera.translate(player.playerDelta);
                 }
 
+
                 //TODO Check if player has met the winning condition
 
+                break;
+
+            case PAUSED:
+                resumeButton.update(checkTouch, touchX, touchY);
+                if (Gdx.input.isKeyPressed(Input.Keys.UP) || resumeButton.isDown) {
+                    gameState = GameState.PLAYING;
+                    isResumeButtonDown = true; // Resume button remains pressed
+                }
+
+                exitToMainMenuButton.update(checkTouch, touchX, touchY);
+                if (Gdx.input.isKeyPressed(Input.Keys.UP) || exitToMainMenuButton.isDown) {
+                    game.setScreen(MyGdxGame.menuScreen); // Return to the main menu
+                }
                 break;
 
             case COMPLETE:
@@ -250,6 +299,9 @@ public class GameScreen implements Screen {
                 break;
         }
     }
+
+
+
     @Override
     public void dispose() {
         tiledMap.dispose();

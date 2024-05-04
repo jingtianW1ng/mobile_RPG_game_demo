@@ -131,9 +131,14 @@ public class Player {
 
     }
 
-    public Rectangle getBoundingBox(){
-        //return new Rectangle((int)x + 20,(int)y + 20,65,90);
-        return null;
+    public Rectangle getBoundingBox() {
+        float width = currentFrame.getRegionWidth();
+        float height = currentFrame.getRegionHeight();
+
+        float x = characterX;
+        float y = characterY;
+
+        return new Rectangle(x, y, width, height);
     }
 
     public void dispose(){
