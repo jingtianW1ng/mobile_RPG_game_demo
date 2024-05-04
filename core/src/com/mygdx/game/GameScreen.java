@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
@@ -84,6 +85,9 @@ public class GameScreen implements Screen {
     boolean isExitButtonDown = false;
     boolean isPauseButtonDown = false;
 
+    //Sound
+    Sound buttonClickSound;
+
     boolean restartActive;
 
 
@@ -130,6 +134,11 @@ public class GameScreen implements Screen {
         pauseButton = new Button("", 10, Gdx.graphics.getHeight() - pauseButtonTexture.getHeight() - 250, buttonSize, buttonSize,pauseButtonTexture,pauseButtonPressedTexture);
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
+
+        //Sound
+        buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("ButtonClick.wav"));
+
+
         newGame();
     }
 
@@ -244,6 +253,7 @@ public class GameScreen implements Screen {
                 } else if (Gdx.input.isKeyPressed(Input.Keys.UP) || pauseButton.isDown) {
                     gameState = GameState.PAUSED;
                     isPauseButtonDown = true;
+                    buttonClickSound.play();
                 }
 
 
@@ -277,12 +287,14 @@ public class GameScreen implements Screen {
                 resumeButton.update(checkTouch, touchX, touchY);
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || resumeButton.isDown) {
                     gameState = GameState.PLAYING;
-                    isResumeButtonDown = true; // Resume button remains pressed
+                    isResumeButtonDown = true;
+                    buttonClickSound.play();
                 }
 
                 exitToMainMenuButton.update(checkTouch, touchX, touchY);
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || exitToMainMenuButton.isDown) {
                     game.setScreen(MyGdxGame.menuScreen); // Return to the main menu
+                    buttonClickSound.play();
                 }
                 break;
 
@@ -309,6 +321,11 @@ public class GameScreen implements Screen {
         buttonSquareDownTexture.dispose();
         buttonLongTexture.dispose();
         buttonLongDownTexture.dispose();
+        menuButtonPressedTexture.dispose();
+        menuButtonTexture.dispose();
+        pauseButtonTexture.dispose();
+        pauseButtonPressedTexture.dispose();
+
     }
     @Override
     public void resize(int width, int height) {

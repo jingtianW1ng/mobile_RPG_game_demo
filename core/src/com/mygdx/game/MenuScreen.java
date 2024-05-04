@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -33,10 +34,14 @@ public class MenuScreen implements Screen{
 
     BitmapFont font;
 
+    Music backgroundMusic;
+
 
 
     public MenuScreen(MyGdxGame game) {
         this.game = game;
+
+
     }
     public void create() {
         Gdx.app.log("MenuScreen: ","menuScreen create");
@@ -53,6 +58,9 @@ public class MenuScreen implements Screen{
         playButton = new Button ("Play",150,400, 600, 180, buttonLongTexture, buttonLongDownTexture);
         exitButton = new Button ("Exit",150,400 - buttonLongTexture.getHeight()*6 , 600, 180, buttonLongTexture, buttonLongDownTexture);
 
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("fantacyBackgroundMusic.wav"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.play();
 
 
     }
@@ -85,6 +93,7 @@ public class MenuScreen implements Screen{
         exitButton.update(checkTouch, touchX, touchY);
 
         if(playButton.isDown){
+            backgroundMusic.stop();
             game.setScreen(MyGdxGame.gameScreen);
         }
 
@@ -101,6 +110,7 @@ public class MenuScreen implements Screen{
         batch.dispose();
         buttonLongTexture.dispose();
         buttonLongDownTexture.dispose();
+        backgroundMusic.dispose();
     }
     @Override
     public void resize(int width, int height) { }
@@ -112,10 +122,12 @@ public class MenuScreen implements Screen{
     public void show() {
         Gdx.app.log("MenuScreen: ","menuScreen show called");
         create();
+
     }
     @Override
     public void hide() {
         Gdx.app.log("MenuScreen: ","menuScreen hide called");
+
     }
 
 
