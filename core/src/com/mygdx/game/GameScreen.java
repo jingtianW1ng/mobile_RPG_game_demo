@@ -136,7 +136,7 @@ public class GameScreen implements Screen {
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
         //Sound
-        buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("ButtonClick.wav"));
+        buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
 
 
         newGame();
