@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 public class MyGdxGame extends Game implements ApplicationListener {
@@ -10,7 +11,7 @@ public class MyGdxGame extends Game implements ApplicationListener {
 	public static MenuScreen menuScreen;
 	// The class with the game
 	public static GameScreen gameScreen;
-
+	public static Screen levelTwoScreen;
 
 
 	@Override
@@ -22,7 +23,7 @@ public class MyGdxGame extends Game implements ApplicationListener {
 		// Change screens to the menu
 		setScreen(menuScreen);
 		Gdx.app.log("MyGdxGame: ","changed screen to menuScreen");
-
+		levelTwoScreen = new LevelTwoScreen(this);
 
 
 	}

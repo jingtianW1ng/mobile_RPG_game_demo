@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -49,10 +50,23 @@ public class Player {
     float dt;
     Vector2 playerDelta;
 
+    Texture playerTexture;
+    Sprite playerSprite;
+    Rectangle playerDeltaRectangle;
+
+
+
     public Player (MyGdxGame game ){
         //texture goes here
         playerDelta = new Vector2();
         state = PlayerState.idleRight;
+
+
+        playerTexture = new Texture("Player/Idel_right/IR0.png");
+        playerSprite = new Sprite(playerTexture);
+        playerSprite.setSize(11,16);
+        playerDeltaRectangle = new Rectangle(0, 0, playerSprite.getWidth(), playerSprite.getHeight());
+
 
         //animation
         for(int i = 0; i < 6 ; i++)
@@ -94,6 +108,8 @@ public class Player {
 
     public void update(){
         float dt = Gdx.graphics.getDeltaTime();
+        playerDeltaRectangle.x = characterX;
+        playerDeltaRectangle.y = characterY;
         switch (state)
         {
             case walkLeft:
@@ -132,8 +148,8 @@ public class Player {
     }
 
     public Rectangle getBoundingBox() {
-        float width = currentFrame.getRegionWidth();
-        float height = currentFrame.getRegionHeight();
+        float width = playerSprite.getWidth();
+        float height = playerSprite.getHeight();
 
         float x = characterX;
         float y = characterY;

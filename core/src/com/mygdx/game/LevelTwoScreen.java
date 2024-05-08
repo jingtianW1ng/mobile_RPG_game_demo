@@ -1,20 +1,14 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -22,22 +16,10 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import org.w3c.dom.Text;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class GameScreen implements Screen {
+public class LevelTwoScreen implements Screen {
 
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
 
@@ -61,7 +43,6 @@ public class GameScreen implements Screen {
     Player player;
     float dt = Gdx.graphics.getDeltaTime();
 
-
     //UI textures
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
@@ -73,9 +54,6 @@ public class GameScreen implements Screen {
     Texture pauseButtonPressedTexture;
     Texture menuButtonTexture;
     Texture menuButtonPressedTexture;
-
-
-
 
     //UI Buttons
     Button moveLeftButton;
@@ -97,49 +75,40 @@ public class GameScreen implements Screen {
     //Sound
     Sound buttonClickSound;
 
-
-
     //Gate
     Texture gateTexture;
     Sprite gateSprite;
     Vector2 gatePosition;
 
-
-
     //Door animation
     DoorAnimation doorAnimation = new DoorAnimation();
     boolean doorOpened = false;
 
-
-
     //Storage class for collision
     Rectangle tileRectangle;
 
-
     boolean restartActive;
 
-
-    public GameScreen(MyGdxGame game) {this.game = game;}
+    public LevelTwoScreen(MyGdxGame game) {this.game = game;}
     public void create() {
-        Gdx.app.log("MenuScreen: ","menuScreen create");
+        Gdx.app.log("LevelTwoScreen: ","levelTwoScreen create");
 
         //Rendering
         spriteBatch = new SpriteBatch();
         uiBatch = new SpriteBatch();
 
         //TODO Initiate the TiledMap and its renderer
-        tiledMap = new TmxMapLoader().load("Background/testMap.tmx");
+        tiledMap = new TmxMapLoader().load("Background/levelTwoMap.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         //Camera
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, w / 9, h / 9);
+        camera.setToOrtho(false, w / 4, h / 4);
 
         //player
         player = new Player(this.game);
-
 
         //Texture
         buttonSquareTexture = new Texture("UI/buttonSquare_blue.png");
@@ -158,8 +127,6 @@ public class GameScreen implements Screen {
         gateSprite = new Sprite(gateTexture);
         gatePosition = new Vector2(144, 192);
 
-
-
         //Buttons
         float buttonSize = h * 0.2f;
         moveLeftButton = new Button("",0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -177,7 +144,6 @@ public class GameScreen implements Screen {
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
 
-
         //Collision
         tileRectangle = new Rectangle();
         MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
@@ -185,32 +151,23 @@ public class GameScreen implements Screen {
         tileRectangle.width = tileLayer.getTileWidth();
         tileRectangle.height = tileLayer.getTileHeight();
 
-
-
-
         newGame();
     }
 
-
-
     private void newGame() {
         gameState = GameState.PLAYING;
-
 
         //Translate camera to center of screen
         camera.position.x = 30; //The 16 is half the size of a tile
         camera.position.y = 30;
 
-
         //Player start location, you can have this stored in the tilemaze using an object layer.
-        player.characterX = 120;
-        player.characterY = 120;
-
+        player.characterX = 40;
+        player.characterY = 630;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
     }
-
 
     public void render(float f) {
         //set dt
@@ -255,7 +212,6 @@ public class GameScreen implements Screen {
         spriteBatch.begin();
         spriteBatch.draw(currentFrame, gatePosition.x, gatePosition.y);
         spriteBatch.end();
-
 
         //Draw UI
         uiBatch.begin();
@@ -378,17 +334,12 @@ public class GameScreen implements Screen {
                         }
                     }
 
-
-
-
-
                     //TODO Move player and camera
                     player.playerSprite.translate(player.playerDelta.x, player.playerDelta.y);
                     player.characterX += player.playerDelta.x;
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
-
 
                 //TODO Check if player has met the winning condition
                 if (!doorOpened && player.getBoundingBox().overlaps(gateSprite.getBoundingRectangle())) {
@@ -397,9 +348,6 @@ public class GameScreen implements Screen {
                     gameState = GameState.COMPLETE;
 
                 }
-
-
-
 
             case PAUSED:
                 resumeButton.update(checkTouch, touchX, touchY);
@@ -411,8 +359,8 @@ public class GameScreen implements Screen {
 
                 exitToMainMenuButton.update(checkTouch, touchX, touchY);
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || exitToMainMenuButton.isDown) {
-                    game.setScreen(MyGdxGame.menuScreen); // Return to the main menu
                     buttonClickSound.play();
+                    game.setScreen(MyGdxGame.menuScreen); // Return to the main menu
                 }
                 break;
 
@@ -441,8 +389,6 @@ public class GameScreen implements Screen {
 
     }
 
-
-
     @Override
     public void dispose() {
         tiledMap.dispose();
@@ -455,9 +401,6 @@ public class GameScreen implements Screen {
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
         gateTexture.dispose();
-
-
-
     }
     @Override
     public void resize(int width, int height) {
