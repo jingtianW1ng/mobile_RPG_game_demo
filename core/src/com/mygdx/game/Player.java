@@ -36,11 +36,15 @@ public class Player {
     Array<TextureRegion> walkRightFrames = new Array<>();
     Array<TextureRegion> idleLeftFrames = new Array<>();
     Array<TextureRegion> idleRightFrames = new Array<>();
-
-
     TextureRegion currentFrame;
+
+    //player health
+    Texture[] healthUi = new Texture[5];
+    int playerHealth = 4;
+
     int frameIndex;
     float stateTime;
+
 
 
 
@@ -53,6 +57,13 @@ public class Player {
         //texture goes here
         playerDelta = new Vector2();
         state = PlayerState.idleRight;
+
+        //health UI
+        for(int i = 0; i < 5 ; i++)
+        {
+            healthUi[i] = new Texture("UI/new_ui/health_ui/health_ui"+i+".png");
+        }
+
 
         //animation
         for(int i = 0; i < 6 ; i++)
@@ -79,7 +90,7 @@ public class Player {
         idleRightAni = new Animation(0.5f, idleRightFrames);
 
 
-        //rectangle
+
     }
 
     public void setState(PlayerState state){
@@ -109,6 +120,9 @@ public class Player {
     public void render(Batch batch){
 
         stateTime += Gdx.graphics.getDeltaTime();
+
+        batch.draw(healthUi[playerHealth], characterX+70,characterY+70);
+
         switch (state)
         {
             case walkLeft:
@@ -131,14 +145,8 @@ public class Player {
 
     }
 
-    public Rectangle getBoundingBox() {
-        float width = currentFrame.getRegionWidth();
-        float height = currentFrame.getRegionHeight();
-
-        float x = characterX;
-        float y = characterY;
-
-        return new Rectangle(x, y, width, height);
+    public Rectangle getBoundingBox(){
+        return new Rectangle(characterX, characterY, 11, 16);
     }
 
     public void dispose(){

@@ -93,6 +93,10 @@ public class GameScreen implements Screen {
 
     boolean restartActive;
 
+    //item
+    Items redPotion;
+    Items greenPotion;
+
 
     public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
@@ -140,6 +144,10 @@ public class GameScreen implements Screen {
 
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
+
+        //items
+        redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
+        greenPotion = new Items(150,90,7,11,"Item/props_itens/potion_green.png");
 
         //Enemies
         flying = new Flying();
@@ -200,6 +208,10 @@ public class GameScreen implements Screen {
         flying.render(spriteBatch);
         goblin.render(spriteBatch);
 
+        //items
+        redPotion.render(spriteBatch);
+        greenPotion.render(spriteBatch);
+
         spriteBatch.end();
 
         //Draw UI
@@ -212,6 +224,8 @@ public class GameScreen implements Screen {
                 moveDownButton.draw(uiBatch);
                 moveUpButton.draw(uiBatch);
                 pauseButton.draw(uiBatch);
+
+
                 break;
             //if gameState is Paused: Draw buttons
             case PAUSED:
@@ -231,6 +245,10 @@ public class GameScreen implements Screen {
         //enemies update
         flying.update();
         goblin.update(this.player);
+        //items update
+        redPotion.update();
+        greenPotion.update();
+
         //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();
@@ -297,6 +315,22 @@ public class GameScreen implements Screen {
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
+
+
+                //if player hit items
+                if(player.getBoundingBox().overlaps(redPotion.getBoundingBox())){
+                    if(player.playerHealth<4){
+                        player.playerHealth+=1;
+                        redPotion.pickUp = true;
+                    }
+                }
+                if(player.getBoundingBox().overlaps(greenPotion.getBoundingBox())){
+                    if(player.playerHealth>0){
+                        player.playerHealth-=1;
+                        greenPotion.pickUp = true;
+                    }
+                }
+
 
 
                 //TODO Check if player has met the winning condition
