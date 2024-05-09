@@ -55,6 +55,9 @@ public class GameScreen implements Screen {
     Player player;
     float dt = Gdx.graphics.getDeltaTime();
 
+    //Enemies
+    Flying flying;
+    Goblin goblin;
 
     //UI textures
     Texture buttonSquareTexture;
@@ -138,6 +141,9 @@ public class GameScreen implements Screen {
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
 
+        //Enemies
+        flying = new Flying();
+        goblin = new Goblin();
 
         newGame();
     }
@@ -152,6 +158,12 @@ public class GameScreen implements Screen {
         //Player start location, you can have this stored in the tilemaze using an object layer.
         player.characterX = 120;
         player.characterY = 120;
+
+        //enemies start location
+        flying.x = 140;
+        flying.y = 120;
+        goblin.x = 140;
+        goblin.y = 160;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
@@ -183,6 +195,11 @@ public class GameScreen implements Screen {
         spriteBatch.begin();
         //TODO player draw
         player.render(spriteBatch);
+
+        //render enemies
+        flying.render(spriteBatch);
+        goblin.render(spriteBatch);
+
         spriteBatch.end();
 
         //Draw UI
@@ -211,6 +228,9 @@ public class GameScreen implements Screen {
     public void update(){
         //player update
         player.update();
+        //enemies update
+        flying.update();
+        goblin.update(this.player);
         //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();

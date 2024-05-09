@@ -58,22 +58,18 @@ public class Player {
         for(int i = 0; i < 6 ; i++)
         {
             walkLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Player/Run_left/RL" + i + ".png"))));
-            i++;
         }
         for(int i = 0; i < 6; i++)
         {
             walkRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Player/Run_right/RR" + i + ".png"))));
-            i++;
         }
         for(int i = 0; i < 6; i++)
         {
             idleLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Player/Idel_left/IL" + i + ".png"))));
-            i++;
         }
         for(int i = 0; i < 6; i++)
         {
             idleRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Player/Idel_right/IR" + i + ".png"))));
-            i++;
         }
 
         stateTime = 0.0f;
@@ -90,7 +86,11 @@ public class Player {
         this.state = state;
     }
 
-
+    public Vector2 getPosition() {
+        float currentX = this.characterX;
+        float currentY = this.characterY;
+        return new Vector2(currentX, currentY);
+    }
 
     public void update(){
         float dt = Gdx.graphics.getDeltaTime();
