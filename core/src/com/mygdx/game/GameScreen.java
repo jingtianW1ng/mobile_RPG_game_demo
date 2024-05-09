@@ -135,7 +135,7 @@ public class GameScreen implements Screen {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, w / 4, h / 4);
+        camera.setToOrtho(false, w / 8, h / 8);
 
         //player
         player = new Player(this.game);
@@ -172,7 +172,7 @@ public class GameScreen implements Screen {
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
-        lvlTwoButton = new Button("Let's start the advanture", 500,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
+        lvlTwoButton = new Button("Let's start the adventure", 600,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
 
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
