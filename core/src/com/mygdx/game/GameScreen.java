@@ -135,7 +135,7 @@ public class GameScreen implements Screen {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, w / 9, h / 9);
+        camera.setToOrtho(false, w / 4, h / 4);
 
         //player
         player = new Player(this.game);
@@ -251,10 +251,12 @@ public class GameScreen implements Screen {
         }
 
         //Draw the door opening animation
-        TextureRegion currentFrame = doorAnimation.getCurrentFrame();
-        spriteBatch.begin();
-        spriteBatch.draw(currentFrame, gatePosition.x, gatePosition.y);
-        spriteBatch.end();
+        if (doorOpened) {
+            TextureRegion currentFrame = doorAnimation.getCurrentFrame();
+            spriteBatch.begin();
+            spriteBatch.draw(currentFrame, gatePosition.x, gatePosition.y);
+            spriteBatch.end();
+        }
 
 
         //Draw UI
@@ -397,7 +399,7 @@ public class GameScreen implements Screen {
                     gameState = GameState.COMPLETE;
 
                 }
-
+                break;
 
 
 
