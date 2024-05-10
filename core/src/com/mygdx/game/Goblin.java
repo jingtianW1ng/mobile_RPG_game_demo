@@ -39,6 +39,11 @@ public class Goblin extends Enemies{
     Texture knife_R;
     MoveState moveState;
     boolean canAttack;
+    float attackFrequency = 0.5f;
+    float attackCD;
+    float animeTime;
+    Rectangle AttackBound;
+    boolean isHit;
 
     public Goblin()
     {
@@ -86,9 +91,34 @@ public class Goblin extends Enemies{
         //create knife
         knife_L = new Texture(Gdx.files.internal("Enemies/enemies/goblin/goblin_knife_L.png"));
         knife_R = new Texture(Gdx.files.internal("Enemies/enemies/goblin/goblin_knife_R.png"));
+
+        //attack rectangle
+        AttackBound = new Rectangle();
+    }
+
+    public Rectangle getBoundingBox(){
+        return new Rectangle(x, y, 11, 16);
+    }
+
+    public Rectangle createAttackBound()
+    {
+        if(isRight)
+        {
+            return new Rectangle(x + 17, y, 11, 16);
+        }
+        else
+        {
+            return new Rectangle(x - 17, y, 11, 16);
+        }
     }
 
     public void update(Player player){
+        if(this.currentState != STATE.ATTACKING)
+        {
+            AttackBound.set(0,0,0,0);
+            isHit = false;
+        }
+        Gdx.app.log("checki: ", "cd: " + attackCD);
         float dt = Gdx.graphics.getDeltaTime();
         switch(this.currentState) {
             case PATROLLING:
@@ -160,12 +190,16 @@ public class Goblin extends Enemies{
                                 this.x -= enemySpeed * dt;
                                 moveState = MoveState.RUN_LEFT;
                                 isRight = false;
+                                attackCD = 0;
                             } else {
-                                moveState = MoveState.RUN_RIGHT;
+                                moveState = MoveState.IDLE_RIGHT;
                                 isRight = true;
                                 //attack goes here
-                                Gdx.app.log("bs: ", "attack the right: ");
-                                this.currentState = STATE.ATTACKING;
+                                attackCD += dt;
+                                if(attackCD >= attackFrequency)
+                                {
+                                    this.currentState = STATE.ATTACKING;
+                                }
                             }
                         }
                         else
@@ -176,14 +210,18 @@ public class Goblin extends Enemies{
                                 this.x += enemySpeed * dt;
                                 moveState = MoveState.RUN_RIGHT;
                                 isRight = true;
+                                attackCD = 0;
                             }
                             else
                             {
-                                moveState = MoveState.RUN_LEFT;
+                                moveState = MoveState.IDLE_LEFT;
                                 isRight = false;
                                 //attack goes here
-                                Gdx.app.log("bs: ","attack the left: ");
-                                this.currentState = STATE.ATTACKING;
+                                attackCD += dt;
+                                if(attackCD >= attackFrequency)
+                                {
+                                    this.currentState = STATE.ATTACKING;
+                                }
                             }
                         }
                     }
@@ -194,12 +232,14 @@ public class Goblin extends Enemies{
                         this.x += enemySpeed * dt;
                         moveState = MoveState.RUN_RIGHT;
                         isRight = true;
+                        attackCD = 0;
                     }
                     if (this.getPosition().x > player.getPosition().x)
                     {
                         this.x -= enemySpeed * dt;
                         moveState = MoveState.RUN_LEFT;
                         isRight = false;
+                        attackCD = 0;
                     }
                 }
                 if (this.getPosition().y < player.getPosition().y)
@@ -215,14 +255,51 @@ public class Goblin extends Enemies{
                 Gdx.app.log("at: ","can attack: " + canAttack);
                 break;
             case ATTACKING:
-                Gdx.app.log("bs: ","ready to attack");
-                Gdx.app.log("bs: ","isRight: " + isRight);
+                animeTime += dt;
+                //Gdx.app.log("bs: ","ready to attack");
+                //Gdx.app.log("bs: ","isRight: " + isRight);
+                Gdx.app.log("time: ","anime time is: " + animeTime);
                 if(isRight)
                 {
+                    //finish attack back to chasing
+                    if(slashRight.isAnimationFinished(animeTime))
+                    {
+                        attackCD = 0;
+                        animeTime = 0;
+                        this.currentState = STATE.CHASING;
+                    }
+                    AttackBound.set(x + 17,y,16,16);
+                    //check if overlap with player when enemy attacking
+                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
+                    {
+                        if(!isHit)
+                        {
+                            Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
+                            player.playerHealth -= 1;
+                            isHit = true;
+                        }
+                    }
                     moveState = MoveState.IDLE_RIGHT;
                 }
                 else
                 {
+                    //finish attack back to chasing
+                    if(slashLeft.isAnimationFinished(animeTime))
+                    {
+                        attackCD = 0;
+                        animeTime = 0;
+                        this.currentState = STATE.CHASING;
+                    }
+                    AttackBound.set(x - 17,y,16,16);
+                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
+                    {
+                        if(!isHit)
+                        {
+                            Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
+                            player.playerHealth -= 1;
+                            isHit = true;
+                        }
+                    }
                     moveState = MoveState.IDLE_LEFT;
                 }
 
@@ -232,51 +309,36 @@ public class Goblin extends Enemies{
     }
     public void render(SpriteBatch batch) {
         stateTime += Gdx.graphics.getDeltaTime();
-        //render knife
-        if(isRight)
-        {
-            batch.draw(knife_R,x + 12,y + 3);
-        }
-        else
-        {
-            batch.draw(knife_L,x - 12,y + 3);
-        }
         //render
         switch(this.currentState) {
-            case PATROLLING:
+            case PATROLLING: case CHASING:
+                //render knife
+                if(isRight)
+                {
+                    batch.draw(knife_R,x + 12,y + 3);
+                }
+                else
+                {
+                    batch.draw(knife_L,x - 12,y + 3);
+                }
                 //use movestate switch render animation
                 switch(moveState)
                 {
                     case RUN_LEFT:
                         currentFrame = (TextureRegion)(walkLeftAni.getKeyFrame(stateTime, true));
-                        Gdx.app.log("trr: ","walk left: "  + walkLeftFrames.size);
                         batch.draw(currentFrame,this.x,this.y);
                         break;
                     case RUN_RIGHT:
                         currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));
-                        Gdx.app.log("trr: ","walk right: "  + walkRightFrames.size);
                         batch.draw(currentFrame,this.x,this.y);
                         break;
                     case IDLE_LEFT:
-                        Gdx.app.log("trr: ","idle left: "  + idleLeftFrames.size);
                         currentFrame = (TextureRegion)(idleLeftAni.getKeyFrame(stateTime, true));
                         batch.draw(currentFrame,this.x,this.y);
                         break;
                     case IDLE_RIGHT:
                         currentFrame = (TextureRegion)(idleRightAni.getKeyFrame(stateTime, true));
                         batch.draw(currentFrame,this.x,this.y);
-                        break;
-                }
-                break;
-            case CHASING:
-                switch(moveState) {
-                    case RUN_LEFT:
-                        currentFrame = (TextureRegion) (walkLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame, this.x, this.y);
-                        break;
-                    case RUN_RIGHT:
-                        currentFrame = (TextureRegion) (walkRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame, this.x, this.y);
                         break;
                 }
                 break;
@@ -293,12 +355,12 @@ public class Goblin extends Enemies{
                 }
                 if(isRight)
                 {
-                    currentFrame = (TextureRegion) (slashRight.getKeyFrame(stateTime, true));
+                    currentFrame = (TextureRegion) (slashRight.getKeyFrame(animeTime, true));
                     batch.draw(currentFrame, this.x + 20, this.y);
                 }
                 else
                 {
-                    currentFrame = (TextureRegion) (slashLeft.getKeyFrame(stateTime, true));
+                    currentFrame = (TextureRegion) (slashLeft.getKeyFrame(animeTime, true));
                     batch.draw(currentFrame, this.x - 20, this.y);
                 }
                 break;
