@@ -1,9 +1,8 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 public class Enemies {
     public enum STATE
@@ -12,10 +11,11 @@ public class Enemies {
         BOOSTING,
         CHASING,
         ATTACKING,
+        WEAKING,
         FLEEING,
         DODGING
     }
-
+    Array<Vector2> xyChecker = new Array<>();
     STATE currentState;
 
     float x;
@@ -24,6 +24,33 @@ public class Enemies {
     float idleTime = 1.0f;
     float idleCD;
 
+    public void updatePrevPos()
+    {
+        if(xyChecker.size >= 2)
+        {
+            Vector2 currentPos = new Vector2(x, y);
+            // get prev element
+            Vector2 prevPos = xyChecker.get(0);
+            // update element
+            xyChecker.removeIndex(0);
+            xyChecker.add(currentPos);
+            Gdx.app.log("isMove: ", "this is current x: " + x);
+            Gdx.app.log("isMove: ", "list size is: " + xyChecker.size);
+            Gdx.app.log("isMove: ", "this is list's now x: " + xyChecker.get(1).x);
+            Gdx.app.log("isMove: ", "this is list's prev x: " + xyChecker.get(0).x);
+        }
+        else
+        {
+            Vector2 currentPos = new Vector2(x, y);
+            xyChecker.add(currentPos);
+        }
+    }
+
+    public boolean checkMove()
+    {
+        return xyChecker.get(0).x == xyChecker.get(1).x
+                && xyChecker.get(0).y == xyChecker.get(1).y;
+    }
 
     public Vector2 getPosition() {
         float currentX = this.x;

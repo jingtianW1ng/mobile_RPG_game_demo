@@ -1,11 +1,8 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
@@ -16,21 +13,12 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import org.w3c.dom.Text;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+
+import java.util.ArrayList;
+import java.util.Vector;
 
 public class GameScreen implements Screen {
 
@@ -58,7 +46,7 @@ public class GameScreen implements Screen {
     //Enemies
     Flying flying;
     Goblin goblin;
-
+    Slime slime;
     //UI textures
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
@@ -70,9 +58,6 @@ public class GameScreen implements Screen {
     Texture pauseButtonPressedTexture;
     Texture menuButtonTexture;
     Texture menuButtonPressedTexture;
-
-
-
     //UI Buttons
     Button moveLeftButton;
     Button moveRightButton;
@@ -152,7 +137,7 @@ public class GameScreen implements Screen {
         //Enemies
         flying = new Flying();
         goblin = new Goblin();
-
+        slime = new Slime();
         newGame();
     }
 
@@ -170,8 +155,10 @@ public class GameScreen implements Screen {
         //enemies start location
         flying.x = 140;
         flying.y = 120;
-        goblin.x = 140;
-        goblin.y = 160;
+        goblin.x = 14000;
+        goblin.y = 140;
+        slime.x = 140;
+        slime.y = 160;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
@@ -207,6 +194,7 @@ public class GameScreen implements Screen {
         //render enemies
         flying.render(spriteBatch);
         goblin.render(spriteBatch);
+        slime.render(spriteBatch);
 
         //items
         redPotion.render(spriteBatch);
@@ -245,6 +233,7 @@ public class GameScreen implements Screen {
         //enemies update
         flying.update();
         goblin.update(this.player);
+        slime.update(this.player);
         //items update
         redPotion.update();
         greenPotion.update();

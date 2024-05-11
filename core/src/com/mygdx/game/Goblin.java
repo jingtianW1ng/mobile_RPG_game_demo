@@ -166,7 +166,7 @@ public class Goblin extends Enemies{
                     }
                 }
                 //check if player close enemy and can see player
-                if(distanceFrom(player) <= 50)
+                if(distanceFrom(player) <= 70)
                 {
                     if(canSeePlayer(player))
                     {
@@ -175,84 +175,91 @@ public class Goblin extends Enemies{
                 }
                 break;
             case CHASING:
-                //try to close player
-                if(distanceFrom(player) < 20)
+                if(distanceFrom(player) > 70)
                 {
-                    Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
-                    Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
-                    //only if player y == enemy y
-                    if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
-                    && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
+                    this.currentState = STATE.PATROLLING;
+                }
+                else
+                {
+                    //try to move near the player
+                    if(distanceFrom(player) < 20)
                     {
-                        //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
-                        if (this.getPosition().x < player.getPosition().x) {
-                            if (distanceFrom(player) <= 17) {
-                                this.x -= enemySpeed * dt;
-                                moveState = MoveState.RUN_LEFT;
-                                isRight = false;
-                                attackCD = 0;
-                            } else {
-                                moveState = MoveState.IDLE_RIGHT;
-                                isRight = true;
-                                //attack goes here
-                                attackCD += dt;
-                                if(attackCD >= attackFrequency)
-                                {
-                                    this.currentState = STATE.ATTACKING;
-                                }
-                            }
-                        }
-                        else
+                        Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
+                        Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
+                        //only if player y == enemy y
+                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
                         {
-                            Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
-                            if(distanceFrom(player) <= 17)
-                            {
-                                this.x += enemySpeed * dt;
-                                moveState = MoveState.RUN_RIGHT;
-                                isRight = true;
-                                attackCD = 0;
+                            //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
+                            if (this.getPosition().x < player.getPosition().x) {
+                                if (distanceFrom(player) <= 17) {
+                                    this.x -= enemySpeed * dt;
+                                    moveState = MoveState.RUN_LEFT;
+                                    isRight = false;
+                                    attackCD = 0;
+                                } else {
+                                    moveState = MoveState.IDLE_RIGHT;
+                                    isRight = true;
+                                    //attack goes here
+                                    attackCD += dt;
+                                    if(attackCD >= attackFrequency)
+                                    {
+                                        this.currentState = STATE.ATTACKING;
+                                    }
+                                }
                             }
                             else
                             {
-                                moveState = MoveState.IDLE_LEFT;
-                                isRight = false;
-                                //attack goes here
-                                attackCD += dt;
-                                if(attackCD >= attackFrequency)
+                                Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
+                                if(distanceFrom(player) <= 17)
                                 {
-                                    this.currentState = STATE.ATTACKING;
+                                    this.x += enemySpeed * dt;
+                                    moveState = MoveState.RUN_RIGHT;
+                                    isRight = true;
+                                    attackCD = 0;
+                                }
+                                else
+                                {
+                                    moveState = MoveState.IDLE_LEFT;
+                                    isRight = false;
+                                    //attack goes here
+                                    attackCD += dt;
+                                    if(attackCD >= attackFrequency)
+                                    {
+                                        this.currentState = STATE.ATTACKING;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                else {
-                    if (this.getPosition().x < player.getPosition().x)
-                    {
-                        this.x += enemySpeed * dt;
-                        moveState = MoveState.RUN_RIGHT;
-                        isRight = true;
-                        attackCD = 0;
+                    else {
+                        if (this.getPosition().x < player.getPosition().x)
+                        {
+                            this.x += enemySpeed * dt;
+                            moveState = MoveState.RUN_RIGHT;
+                            isRight = true;
+                            attackCD = 0;
+                        }
+                        if (this.getPosition().x > player.getPosition().x)
+                        {
+                            this.x -= enemySpeed * dt;
+                            moveState = MoveState.RUN_LEFT;
+                            isRight = false;
+                            attackCD = 0;
+                        }
                     }
-                    if (this.getPosition().x > player.getPosition().x)
+                    if (this.getPosition().y < player.getPosition().y)
                     {
-                        this.x -= enemySpeed * dt;
-                        moveState = MoveState.RUN_LEFT;
-                        isRight = false;
-                        attackCD = 0;
+                        this.y += enemySpeed * dt;
                     }
+                    if (this.getPosition().y > player.getPosition().y)
+                    {
+                        this.y -= enemySpeed * dt;
+                    }
+                    //Gdx.app.log("bs: ","left distance: "  + distanceFrom(player));
+                    //back potral goes here
+                    Gdx.app.log("at: ","can attack: " + canAttack);
                 }
-                if (this.getPosition().y < player.getPosition().y)
-                {
-                    this.y += enemySpeed * dt;
-                }
-                if (this.getPosition().y > player.getPosition().y)
-                {
-                    this.y -= enemySpeed * dt;
-                }
-                //Gdx.app.log("bs: ","left distance: "  + distanceFrom(player));
-                //back potral goes here
-                Gdx.app.log("at: ","can attack: " + canAttack);
                 break;
             case ATTACKING:
                 animeTime += dt;
