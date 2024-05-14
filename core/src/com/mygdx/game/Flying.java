@@ -61,8 +61,8 @@ public class Flying extends Enemies{
         stateTime = 0.0f;
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
-        chargeLeft = new Animation(1f, chargeLeftFrames);
-        chargeRight = new Animation(1f, chargeRightFrames);
+        chargeLeft = new Animation(3f, chargeLeftFrames);
+        chargeRight = new Animation(3f, chargeRightFrames);
 
         isRight = true;
         isAttacking = false;
@@ -134,6 +134,12 @@ public class Flying extends Enemies{
                 } else {
                     //try to move near the player
                     if (distanceFrom(player) < 40) {
+                        if (this.getPosition().x < player.getPosition().x) {
+                            isRight = true;
+                        }
+                        if (this.getPosition().x > player.getPosition().x) {
+                            isRight = false;
+                        }
                         //state change to attacking
                         attackCD += dt;
                         if(attackCD >= 4)
@@ -144,12 +150,10 @@ public class Flying extends Enemies{
                     } else {
                         if (this.getPosition().x < player.getPosition().x) {
                             this.x += flyingSpeed * dt;
-                            moveState = MoveState.RUN_RIGHT;
                             isRight = true;
                         }
                         if (this.getPosition().x > player.getPosition().x) {
                             this.x -= flyingSpeed * dt;
-                            moveState = MoveState.RUN_LEFT;
                             isRight = false;
                         }
                     }
@@ -188,7 +192,8 @@ public class Flying extends Enemies{
                     }
                     else
                     {
-                        if(chargeRight.isAnimationFinished(attackingTime))
+                        //chargeLeft.isAnimationFinished(attackingTime)
+                        if(chargeLeft.isAnimationFinished(attackingTime))
                         {
                             canFire = true;
                             attackingTime = 0;
@@ -208,7 +213,7 @@ public class Flying extends Enemies{
         }
         //render
         switch(this.currentState) {
-            case PATROLLING:
+            case PATROLLING: case CHASING:
                 if(isRight)
                 {
                     currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));
@@ -220,28 +225,16 @@ public class Flying extends Enemies{
                     batch.draw(currentFrame,this.x,this.y);
                 }
                 break;
-            case CHASING:
-                switch(moveState)
-                {
-                    case RUN_LEFT:
-                        currentFrame = (TextureRegion)(walkLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x,this.y);
-                        break;
-                    case RUN_RIGHT:
-                        currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x,this.y);
-                        break;
-                }
-                break;
+
             case ATTACKING:
                 if(isRight)
                 {
-                    currentFrame = (TextureRegion)(chargeRight.getKeyFrame(stateTime, true));
+                    currentFrame = (TextureRegion)(chargeRight.getKeyFrame(attackingTime, true));
                     batch.draw(currentFrame,this.x,this.y);
                 }
                 else
                 {
-                    currentFrame = (TextureRegion)(chargeLeft.getKeyFrame(stateTime, true));
+                    currentFrame = (TextureRegion)(chargeLeft.getKeyFrame(attackingTime, true));
                     batch.draw(currentFrame,this.x,this.y);
                 }
                 break;
