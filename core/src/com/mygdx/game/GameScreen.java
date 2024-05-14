@@ -231,7 +231,7 @@ public class GameScreen implements Screen {
         //player update
         player.update();
         //enemies update
-        flying.update();
+        flying.update(this.player);
         goblin.update(this.player);
         slime.update(this.player);
         //items update

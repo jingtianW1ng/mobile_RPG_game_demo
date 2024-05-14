@@ -34,7 +34,6 @@ public class Slime extends Enemies{
     MoveState moveState;
     Vector2 boostingTarget;
     boolean isBoosting;
-    float boostingFrequency = 0.5f;
     float boostingCD;
     float boostingTime = 2f;
     float weakingCD;

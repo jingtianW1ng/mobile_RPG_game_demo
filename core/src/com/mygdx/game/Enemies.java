@@ -23,7 +23,6 @@ public class Enemies {
     boolean isRight;
     float idleTime = 1.0f;
     float idleCD;
-
     public void updatePrevPos()
     {
         if(xyChecker.size >= 2)
