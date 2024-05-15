@@ -85,7 +85,6 @@ public class GameScreen implements Screen {
 
     public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
-        Gdx.app.log("MenuScreen: ","menuScreen create");
 
         //Rendering
         spriteBatch = new SpriteBatch();

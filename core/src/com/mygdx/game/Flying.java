@@ -37,6 +37,10 @@ public class Flying extends Enemies{
     float attackingTime;
     boolean canFire;
     boolean missileFired;
+    float angle;
+    float xDegree;
+    float yDegree;
+    float waitCD;
     public Flying()
     {
         moveState = MoveState.IDLE_RIGHT;
@@ -61,8 +65,8 @@ public class Flying extends Enemies{
         stateTime = 0.0f;
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
-        chargeLeft = new Animation(3f, chargeLeftFrames);
-        chargeRight = new Animation(3f, chargeRightFrames);
+        chargeLeft = new Animation(1f, chargeLeftFrames);
+        chargeRight = new Animation(1f, chargeRightFrames);
 
         isRight = true;
         isAttacking = false;
@@ -77,6 +81,7 @@ public class Flying extends Enemies{
     }
     public void update(Player player){
         float dt = Gdx.graphics.getDeltaTime();
+        Gdx.app.log("state","state is: " + currentState);
         //update missiles
         if(missiles.size != 0)
         {
@@ -129,6 +134,7 @@ public class Flying extends Enemies{
                 }
                 break;
             case CHASING:
+                canFire = false;
                 if (distanceFrom(player) > 70) {
                     this.currentState = STATE.PATROLLING;
                 } else {
@@ -147,21 +153,14 @@ public class Flying extends Enemies{
                             attackCD = 0;
                             this.currentState = STATE.ATTACKING;
                         }
-                    } else {
-                        if (this.getPosition().x < player.getPosition().x) {
-                            this.x += flyingSpeed * dt;
-                            isRight = true;
-                        }
-                        if (this.getPosition().x > player.getPosition().x) {
-                            this.x -= flyingSpeed * dt;
-                            isRight = false;
-                        }
                     }
-                    if (this.getPosition().y < player.getPosition().y) {
-                        this.y += flyingSpeed * dt;
-                    }
-                    if (this.getPosition().y > player.getPosition().y) {
-                        this.y -= flyingSpeed * dt;
+                    else
+                    {
+                        angle = getAngle(player.getPosition());
+                        xDegree = MathUtils.cosDeg(angle);
+                        yDegree = MathUtils.sinDeg(angle);
+                        x += flyingSpeed * xDegree * dt;
+                        y += flyingSpeed * yDegree * dt;
                     }
                 }
                 break;
@@ -175,9 +174,17 @@ public class Flying extends Enemies{
                     missile.x = this.x;
                     missile.y = this.y;
                     missiles.add(missile);
-                    attackingTime = 0;
                     canFire = false;
-                    this.currentState = STATE.CHASING;
+                    attackingTime = 0;
+                    if(x < player.characterX)
+                    {
+                        isRight = true;
+                    }
+                    if(x > player.characterX)
+                    {
+                        isRight = false;
+                    }
+                    this.currentState = STATE.IDLE;
                 }
                 else
                 {
@@ -187,7 +194,6 @@ public class Flying extends Enemies{
                         if(chargeRight.isAnimationFinished(attackingTime))
                         {
                             canFire = true;
-                            attackingTime = 0;
                         }
                     }
                     else
@@ -196,9 +202,16 @@ public class Flying extends Enemies{
                         if(chargeLeft.isAnimationFinished(attackingTime))
                         {
                             canFire = true;
-                            attackingTime = 0;
                         }
                     }
+                }
+                break;
+            case IDLE:
+                waitCD += dt;
+                if(waitCD >= 1)
+                {
+                    this.currentState = STATE.CHASING;
+                    waitCD = 0;
                 }
                 break;
             default:
@@ -213,7 +226,7 @@ public class Flying extends Enemies{
         }
         //render
         switch(this.currentState) {
-            case PATROLLING: case CHASING:
+            case PATROLLING: case CHASING: case IDLE:
                 if(isRight)
                 {
                     currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));

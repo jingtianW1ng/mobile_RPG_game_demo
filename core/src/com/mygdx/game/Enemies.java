@@ -12,6 +12,7 @@ public class Enemies {
         CHASING,
         ATTACKING,
         WEAKING,
+        IDLE,
         FLEEING,
         DODGING
     }
