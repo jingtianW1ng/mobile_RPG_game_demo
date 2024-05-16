@@ -47,6 +47,7 @@ public class GameScreen implements Screen {
     Flying flying;
     Goblin goblin;
     Slime slime;
+    Boss boss;
     //UI textures
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
@@ -82,7 +83,8 @@ public class GameScreen implements Screen {
     Items redPotion;
     Items greenPotion;
 
-
+    Texture bosstex;
+    Texture goblinTex;
     public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
 
@@ -137,6 +139,7 @@ public class GameScreen implements Screen {
         flying = new Flying();
         goblin = new Goblin();
         slime = new Slime();
+        boss = new Boss();
         newGame();
     }
 
@@ -156,8 +159,10 @@ public class GameScreen implements Screen {
         flying.y = 120;
         goblin.x = 14000;
         goblin.y = 140;
-        slime.x = 140;
-        slime.y = 160;
+        slime.x = 0;
+        slime.y = 0;
+        boss.x = 140;
+        boss.y = 100;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
@@ -194,6 +199,7 @@ public class GameScreen implements Screen {
         flying.render(spriteBatch);
         goblin.render(spriteBatch);
         slime.render(spriteBatch);
+        boss.render(spriteBatch);
 
         //items
         redPotion.render(spriteBatch);
@@ -233,6 +239,7 @@ public class GameScreen implements Screen {
         flying.update(this.player);
         goblin.update(this.player);
         slime.update(this.player);
+        boss.update(this.player);
         //items update
         redPotion.update();
         greenPotion.update();

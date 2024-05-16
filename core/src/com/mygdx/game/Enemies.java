@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
@@ -24,6 +25,7 @@ public class Enemies {
     boolean isRight;
     float idleTime = 1.0f;
     float idleCD;
+    Rectangle truePos;
     public void updatePrevPos()
     {
         if(xyChecker.size >= 2)
@@ -57,6 +59,11 @@ public class Enemies {
         float currentY = this.y;
         return new Vector2(currentX, currentY);
     }
+    public Vector2 getBossPosition() {
+        float currentX = truePos.x;
+        float currentY = truePos.y;
+        return new Vector2(currentX, currentY);
+    }
     public float getAngle(Vector2 target) {
         float angle = (float) Math.toDegrees(Math.atan2(target.y - this.getPosition().y, target.x - this.getPosition().x));
 
@@ -82,7 +89,36 @@ public class Enemies {
         }
         return false;
     }
+    public float bossGetAngle(Vector2 target) {
+        float angle = (float) Math.toDegrees(Math.atan2(target.y - this.getBossPosition().y, target.x - this.getBossPosition().x));
+
+        if(angle < 0){
+            angle += 360;
+        }
+        return angle;
+    }
+
+    public boolean bossCanSeePlayer(Player player) {
+        float angle = this.bossGetAngle(player.getPosition());
+        if(isRight)
+        {
+            if (player.getPosition().x > truePos.x) {
+                return angle <= 45 || angle >= 315;
+            }
+        }
+        else
+        {
+            if (player.getPosition().x < truePos.x) {
+                return angle >= 135 && angle <= 225;
+            }
+        }
+        return false;
+    }
     public float distanceFrom(Player player) {
         return this.getPosition().dst(player.getPosition());
+    }
+
+    public float bossDistanceFrom(Player player) {
+        return this.getBossPosition().dst(player.getPosition());
     }
 }
