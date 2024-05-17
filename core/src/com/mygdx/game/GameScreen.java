@@ -161,7 +161,7 @@ public class GameScreen implements Screen {
         goblin.y = 140;
         slime.x = 0;
         slime.y = 0;
-        boss.x = 120;
+        boss.x = 190;
         boss.y = 120;
 
         camera.translate(player.characterX, player.characterY);
