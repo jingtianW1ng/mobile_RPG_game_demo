@@ -67,6 +67,8 @@ public class GameScreen implements Screen {
     Button restartButton;
     //Just use this to only restart when the restart button is released instead of immediately as it's pressed
 
+    //player attack button
+    Button attackButton;
     Button pauseButton;
     Button resumeButton;
     Button exitToMainMenuButton;
@@ -123,6 +125,10 @@ public class GameScreen implements Screen {
         moveDownButton = new Button("", buttonSize, 0.0f, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
+
+        //player attack button
+        float screenWidth = Gdx.graphics.getWidth() - buttonSize;
+        attackButton = new Button("",screenWidth, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
 
         pauseButton = new Button("", 10, Gdx.graphics.getHeight() - pauseButtonTexture.getHeight() - 250, buttonSize, buttonSize,pauseButtonTexture,pauseButtonPressedTexture);
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
@@ -218,6 +224,8 @@ public class GameScreen implements Screen {
                 moveUpButton.draw(uiBatch);
                 pauseButton.draw(uiBatch);
 
+                //player attack
+                attackButton.draw(uiBatch);
 
                 break;
             //if gameState is Paused: Draw buttons
@@ -259,6 +267,7 @@ public class GameScreen implements Screen {
                 moveDownButton.update(checkTouch, touchX, touchY);
                 moveUpButton.update(checkTouch, touchX, touchY);
                 pauseButton.update(checkTouch,touchX,touchY);
+                attackButton.update(checkTouch,touchX,touchY);
 
                 float moveX = 0;
                 float moveY = 0;
@@ -289,6 +298,9 @@ public class GameScreen implements Screen {
                     buttonClickSound.play();
                 }
 
+                if(attackButton.isDown)
+                {
+                }
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
                 Gdx.app.log("sb: ","delta x: " + player.playerDelta.x);
