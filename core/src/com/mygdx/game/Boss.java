@@ -81,6 +81,30 @@ public class Boss extends Enemies{
         {
             attackRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/attack_right/golemSteel - attack" + i + ".png"))));
         }
+        for(int i = 1; i < 8; i++)
+        {
+            hitLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_left/golemSteel - hit" + i + ".png"))));
+        }
+        for(int i = 1; i < 8; i++)
+        {
+            hitRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_right/golemSteel - hit" + i + ".png"))));
+        }
+        for(int i = 1; i < 15; i++)
+        {
+            deathLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/death_left/golemSteel - death" + i + ".png"))));
+        }
+        for(int i = 1; i < 15; i++)
+        {
+            deathRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/death_right/golemSteel - death" + i + ".png"))));
+        }
+        for(int i = 1; i < 14; i++)
+        {
+            wakeupLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/wakeup_left/golemSteel - wakeup" + i + ".png"))));
+        }
+        for(int i = 1; i < 14; i++)
+        {
+            wakeupRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/wakeup_right/golemSteel - wakeup" + i + ".png"))));
+        }
         stateTime = 0.0f;
         //enemy move animation
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
@@ -90,6 +114,15 @@ public class Boss extends Enemies{
         //attack effect
         attackLeft =  new Animation(0.1f, attackLeftFrames);
         attackRight = new Animation(0.1f, attackRightFrames);
+        //hit
+        hitLeft = new Animation(0.2f, hitLeftFrames);
+        hitRight = new Animation(0.2f, hitRightFrames);
+        //death
+        deathLeft = new Animation(0.2f, deathLeftFrames);
+        deathLeft = new Animation(0.2f, deathRightFrames);
+        //wakeUp
+        wakeupLeft = new Animation(0.2f, wakeupLeftFrames);
+        wakeupRight = new Animation(0.2f, wakeupRightFrames);
 
 
         isRight = true;

@@ -6,8 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class Enemies {
-    public enum STATE
-    {
+    public enum STATE {
         PATROLLING,
         BOOSTING,
         CHASING,
@@ -15,7 +14,10 @@ public class Enemies {
         WEAKING,
         IDLE,
         FLEEING,
-        DODGING
+        DODGING,
+        WAKEUP,
+        HITTING,
+        DEATH
     }
     Array<Vector2> xyChecker = new Array<>();
     STATE currentState;
