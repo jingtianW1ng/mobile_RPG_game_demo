@@ -101,7 +101,6 @@ public class Boss extends Enemies{
 
 
     public void update(Player player){
-        truePos.setPosition(x, y);
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
@@ -155,7 +154,7 @@ public class Boss extends Enemies{
                     }
                 }
                 //check if player close enemy and can see player
-                if(bossDistanceFrom(player) <= 70)
+                if(distanceFrom(player) <= 70)
                 {
                     if(canSeePlayer(player))
                     {
