@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 public class Boss extends Enemies{
     Animation walkLeftAni;
@@ -44,7 +43,7 @@ public class Boss extends Enemies{
         RUN_LEFT,
         RUN_RIGHT
     }
-    Rectangle truePos;
+
     MoveState moveState;
     boolean canAttack;
     float attackFrequency = 0.5f;
@@ -89,8 +88,8 @@ public class Boss extends Enemies{
         idleLeftAni = new Animation(0.5f, idleLeftFrames);
         idleRightAni = new Animation(0.5f, idleRightFrames);
         //attack effect
-        attackLeft =  new Animation(0.2f, attackLeftFrames);
-        attackRight = new Animation(0.2f, attackRightFrames);
+        attackLeft =  new Animation(0.1f, attackLeftFrames);
+        attackRight = new Animation(0.1f, attackRightFrames);
 
 
         isRight = true;
@@ -98,51 +97,18 @@ public class Boss extends Enemies{
 
         //attack rectangle
         AttackBound = new Rectangle();
-        truePos = new Rectangle(140,120,16,16);
     }
 
-    public Vector2 getBossPosition() {
-        float currentX = truePos.x;
-        float currentY = truePos.y;
-        return new Vector2(currentX, currentY);
-    }
 
-    public float getBossAngle(Vector2 target) {
-        float angle = (float) Math.toDegrees(Math.atan2(target.y - this.getBossPosition().y, target.x - this.getBossPosition().x));
-
-        if(angle < 0){
-            angle += 360;
-        }
-        return angle;
-    }
-
-    public boolean canBossSeePlayer(Player player) {
-        float angle = this.getBossAngle(player.getPosition());
-        if(isRight)
-        {
-            if (player.getPosition().x > getBossPosition().x) {
-                return angle <= 45 || angle >= 315;
-            }
-        }
-        else
-        {
-            if (player.getPosition().x < getBossPosition().x) {
-                return angle >= 135 && angle <= 225;
-            }
-        }
-        return false;
-    }
-    public float bossDistanceFrom(Player player) {
-        return getBossPosition().dst(player.getPosition());
-    }
     public void update(Player player){
+        Gdx.app.log("posb: ", "player x: " + player.characterX);
+        Gdx.app.log("posb: ", "boss x: " + x);
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
             isHit = false;
         }
-        Gdx.app.log("pos: ", "player y: " + player.characterY);
-        Gdx.app.log("pos: ", "boss y: " + truePos.y);
+        Gdx.app.log("checki: ", "cd: " + attackCD);
         float dt = Gdx.graphics.getDeltaTime();
         switch(this.currentState) {
             case PATROLLING:
@@ -180,42 +146,44 @@ public class Boss extends Enemies{
                     //set run state
                     if(isRight)
                     {
-                        truePos.x += enemySpeed * dt;
+                        this.x += enemySpeed * dt;
                         moveState = MoveState.RUN_RIGHT;
                     }
                     else
                     {
-                        truePos.x -= enemySpeed * dt;
+                        this.x -= enemySpeed * dt;
                         moveState = MoveState.RUN_LEFT;
                     }
                 }
                 //check if player close enemy and can see player
-                if(bossDistanceFrom(player) <= 70)
+                if(distanceFrom(player) <= 70)
                 {
-                    if(canBossSeePlayer(player))
+                    if(canSeePlayer(player))
                     {
                         this.currentState = STATE.CHASING;
                     }
                 }
                 break;
             case CHASING:
-                if(bossDistanceFrom(player) > 70)
+                if(distanceFrom(player) > 70)
                 {
                     this.currentState = STATE.PATROLLING;
                 }
                 else
                 {
                     //try to move near the player
-                    if(bossDistanceFrom(player) < 20)
+                    if(distanceFrom(player) < 20)
                     {
+                        Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
+                        Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
                         //only if player y == enemy y
-                        if(Math.round(truePos.y) >= Math.round(player.getPosition().y - 1)
-                                && Math.round(truePos.y) <= Math.round(player.getPosition().y + 1))
+                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
                         {
                             //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
                             if (this.getPosition().x < player.getPosition().x) {
-                                if (bossDistanceFrom(player) <= 17) {
-                                    truePos.x -= enemySpeed * dt;
+                                if (distanceFrom(player) <= 17) {
+                                    this.x -= enemySpeed * dt;
                                     moveState = MoveState.RUN_LEFT;
                                     isRight = false;
                                     attackCD = 0;
@@ -232,10 +200,10 @@ public class Boss extends Enemies{
                             }
                             else
                             {
-                                Gdx.app.log("bs: ","here2: "  + bossDistanceFrom(player));
-                                if(bossDistanceFrom(player) <= 17)
+                                Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
+                                if(distanceFrom(player) <= 17)
                                 {
-                                    truePos.x += enemySpeed * dt;
+                                    this.x += enemySpeed * dt;
                                     moveState = MoveState.RUN_RIGHT;
                                     isRight = true;
                                     attackCD = 0;
@@ -257,14 +225,14 @@ public class Boss extends Enemies{
                     else {
                         if (this.getPosition().x < player.getPosition().x)
                         {
-                            truePos.x += enemySpeed * dt;
+                            this.x += enemySpeed * dt;
                             moveState = MoveState.RUN_RIGHT;
                             isRight = true;
                             attackCD = 0;
                         }
                         if (this.getPosition().x > player.getPosition().x)
                         {
-                            truePos.x -= enemySpeed * dt;
+                            this.x -= enemySpeed * dt;
                             moveState = MoveState.RUN_LEFT;
                             isRight = false;
                             attackCD = 0;
@@ -272,11 +240,11 @@ public class Boss extends Enemies{
                     }
                     if (this.getPosition().y < player.getPosition().y)
                     {
-                        truePos.y += enemySpeed * dt;
+                        this.y += enemySpeed * dt;
                     }
                     if (this.getPosition().y > player.getPosition().y)
                     {
-                       truePos.y -= enemySpeed * dt;
+                        this.y -= enemySpeed * dt;
                     }
                     //Gdx.app.log("bs: ","left distance: "  + distanceFrom(player));
                     //back potral goes here
@@ -297,18 +265,17 @@ public class Boss extends Enemies{
                         animeTime = 0;
                         this.currentState = STATE.CHASING;
                     }
-                    AttackBound.set(truePos.x + 17, truePos.y, 16,16);
+                    AttackBound.set(x + 16 ,y,32,32);
                     //check if overlap with player when enemy attacking
-                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
+                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3)
                     {
                         if(!isHit)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
-                            //player.playerHealth -= 1;
+                            player.playerHealth -= 1;
                             isHit = true;
                         }
                     }
-                    moveState = MoveState.IDLE_RIGHT;
                 }
                 else
                 {
@@ -319,17 +286,16 @@ public class Boss extends Enemies{
                         animeTime = 0;
                         this.currentState = STATE.CHASING;
                     }
-                    AttackBound.set(truePos.x - 17, truePos.y, 16,16);
-                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
+                    AttackBound.set(x - 32,y,32,32);
+                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3)
                     {
                         if(!isHit)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
-                            //player.playerHealth -= 1;
+                            player.playerHealth -= 1;
                             isHit = true;
                         }
                     }
-                    moveState = MoveState.IDLE_LEFT;
                 }
 
                 break;
@@ -347,42 +313,32 @@ public class Boss extends Enemies{
                 {
                     case RUN_LEFT:
                         currentFrame = (TextureRegion)(walkLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
+                        batch.draw(currentFrame,this.x - 40,this.y - 32);
                         break;
                     case RUN_RIGHT:
                         currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
+                        batch.draw(currentFrame,this.x - 40,this.y - 32);
                         break;
                     case IDLE_LEFT:
                         currentFrame = (TextureRegion)(idleLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
+                        batch.draw(currentFrame,this.x - 40,this.y - 32);
                         break;
                     case IDLE_RIGHT:
                         currentFrame = (TextureRegion)(idleRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
+                        batch.draw(currentFrame,this.x - 40,this.y - 32);
                         break;
                 }
                 break;
             case ATTACKING:
-                switch(moveState) {
-                    case IDLE_LEFT:
-                        currentFrame = (TextureRegion) (idleLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
-                        break;
-                    case IDLE_RIGHT:
-                        currentFrame = (TextureRegion) (idleRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,truePos.x,truePos.y);
-                        break;
-                }
                 if(isRight)
                 {
                     currentFrame = (TextureRegion) (attackRight.getKeyFrame(animeTime, true));
-                    batch.draw(currentFrame,truePos.x,truePos.y);
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
                 }
                 else
                 {
                     currentFrame = (TextureRegion) (attackLeft.getKeyFrame(animeTime, true));
-                    batch.draw(currentFrame,truePos.x,truePos.y);
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
                 }
                 break;
             default:
