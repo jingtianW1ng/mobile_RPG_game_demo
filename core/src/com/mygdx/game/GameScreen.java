@@ -14,11 +14,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-
-import java.util.ArrayList;
-import java.util.Vector;
 
 public class GameScreen implements Screen {
 
@@ -273,10 +268,12 @@ public class GameScreen implements Screen {
                 float moveY = 0;
                 if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || moveLeftButton.isDown) {
                     moveLeftButton.isDown = true;
+                    player.isRight = false;
                     moveX -= 1f;
                     player.setState(Player.PlayerState.walkLeft);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || moveRightButton.isDown) {
                     moveRightButton.isDown = true;
+                    player.isRight = true;
                     moveX += 1f;
                     player.setState(Player.PlayerState.walkRight);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || moveDownButton.isDown) {
@@ -300,6 +297,7 @@ public class GameScreen implements Screen {
 
                 if(attackButton.isDown)
                 {
+                    player.attack();
                 }
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
