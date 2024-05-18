@@ -45,8 +45,10 @@ public class Slime extends Enemies{
     float xDegree;
     float yDegree;
 
-    public Slime()
+    public Slime(float x, float y)
     {
+        this.x = x;
+        this.y = y;
         moveState = MoveState.IDLE_RIGHT;
         this.currentState = STATE.PATROLLING;
         //animation

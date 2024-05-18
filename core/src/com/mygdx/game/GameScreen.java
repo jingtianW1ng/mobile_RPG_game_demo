@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.utils.Array;
 
 public class GameScreen implements Screen {
 
@@ -39,9 +40,9 @@ public class GameScreen implements Screen {
     float dt = Gdx.graphics.getDeltaTime();
 
     //Enemies
-    Flying flying;
-    Goblin goblin;
-    Slime slime;
+    Array<Flying> flyings = new Array<>();
+    Array<Goblin> goblins = new Array<>();
+    Array<Slime> slimes = new Array<>();
     Boss boss;
     //UI textures
     Texture buttonSquareTexture;
@@ -136,13 +137,38 @@ public class GameScreen implements Screen {
         redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
         greenPotion = new Items(150,90,7,11,"Item/props_itens/potion_green.png");
 
-        //Enemies
-        flying = new Flying();
-        goblin = new Goblin();
-        slime = new Slime();
+        //每个level的要创建的enemies在这里
+        //flyings
+        spawnFlying(140,120);
+
+        //goblins
+        spawnGoblin(140, 140);
+
+        //slimes
+        spawnSlime(140,160);
+
+        //boss只有一个不用多个生成
         boss = new Boss();
         newGame();
     }
+
+    private void spawnFlying(float x, float y)
+    {
+        Flying newFlying = new Flying(x,y);
+        flyings.add(newFlying);
+    }
+
+    private void spawnGoblin(float x, float y)
+    {
+        Goblin newGoblin = new Goblin(x,y);
+        goblins.add(newGoblin);
+    }
+    private void spawnSlime(float x, float y)
+    {
+        Slime newSlime = new Slime(x,y);
+        slimes.add(newSlime);
+    }
+
 
     private void newGame() {
         gameState = GameState.PLAYING;
@@ -155,13 +181,7 @@ public class GameScreen implements Screen {
         player.characterX = 120;
         player.characterY = 120;
 
-        //enemies start location
-        flying.x = 140;
-        flying.y = 120;
-        goblin.x = 14000;
-        goblin.y = 140;
-        slime.x = 0;
-        slime.y = 0;
+        //boss location
         boss.x = 190;
         boss.y = 120;
 
@@ -196,10 +216,19 @@ public class GameScreen implements Screen {
         //TODO player draw
         player.render(spriteBatch);
 
-        //render enemies
-        flying.render(spriteBatch);
-        goblin.render(spriteBatch);
-        slime.render(spriteBatch);
+        //render each loop enemies
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).render(spriteBatch);
+        }
         boss.render(spriteBatch);
 
         //items
@@ -239,9 +268,19 @@ public class GameScreen implements Screen {
         //player update
         player.update();
         //enemies update
-        flying.update(this.player);
-        goblin.update(this.player);
-        slime.update(this.player);
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).update(this.player);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).update(this.player);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).update(this.player);
+        }
+
         boss.update(this.player);
         //items update
         redPotion.update();

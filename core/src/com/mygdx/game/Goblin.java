@@ -45,8 +45,10 @@ public class Goblin extends Enemies{
     Rectangle AttackBound;
     boolean isHit;
 
-    public Goblin()
+    public Goblin(float x, float y)
     {
+        this.x = x;
+        this.y = y;
         moveState = MoveState.IDLE_RIGHT;
         this.currentState = STATE.PATROLLING;
         //animation
