@@ -1,49 +1,27 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import org.w3c.dom.Text;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.utils.Array;
 
 public class GameScreen implements Screen {
 
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
-
     // constructor to keep a reference to the main Game class
 
-    public enum GameState { PLAYING, PAUSED, COMPLETE, FAILED };
+    public enum GameState { PLAYING, PAUSED, COMPLETE };
 
     GameState gameState = GameState.PLAYING;
 
@@ -61,7 +39,11 @@ public class GameScreen implements Screen {
     Player player;
     float dt = Gdx.graphics.getDeltaTime();
 
-
+    //Enemies
+    Array<Flying> flyings = new Array<>();
+    Array<Goblin> goblins = new Array<>();
+    Array<Slime> slimes = new Array<>();
+    Boss boss;
     //UI textures
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
@@ -73,10 +55,6 @@ public class GameScreen implements Screen {
     Texture pauseButtonPressedTexture;
     Texture menuButtonTexture;
     Texture menuButtonPressedTexture;
-
-
-
-
     //UI Buttons
     Button moveLeftButton;
     Button moveRightButton;
@@ -85,43 +63,28 @@ public class GameScreen implements Screen {
     Button restartButton;
     //Just use this to only restart when the restart button is released instead of immediately as it's pressed
 
+    //player attack button
+    Button attackButton;
     Button pauseButton;
     Button resumeButton;
     Button exitToMainMenuButton;
-    Button lvlTwoButton;
     boolean isResumeButtonDown = false;
     boolean isExitButtonDown = false;
     boolean isPauseButtonDown = false;
-    boolean isLvlTwoButtonDown = false;
 
     //Sound
     Sound buttonClickSound;
 
-
-
-    //Gate
-    Texture gateTexture;
-    Sprite gateSprite;
-    Vector2 gatePosition;
-
-
-
-    //Door animation
-    DoorAnimation doorAnimation = new DoorAnimation();
-    boolean doorOpened = false;
-
-
-
-    //Storage class for collision
-    Rectangle tileRectangle;
-
-
     boolean restartActive;
 
+    //item
+    Items redPotion;
+    Items greenPotion;
 
+    Texture bosstex;
+    Texture goblinTex;
     public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
-        Gdx.app.log("MenuScreen: ","menuScreen create");
 
         //Rendering
         spriteBatch = new SpriteBatch();
@@ -135,12 +98,10 @@ public class GameScreen implements Screen {
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, w / 8, h / 8);
+        camera.setToOrtho(false, w / 9, h / 9);
 
         //player
         player = new Player(this.game);
-
-
         //Texture
         buttonSquareTexture = new Texture("UI/buttonSquare_blue.png");
         buttonSquareDownTexture = new Texture("UI/buttonSquare_beige_pressed.png");
@@ -153,13 +114,6 @@ public class GameScreen implements Screen {
         menuButtonTexture = new Texture("UI/new_ui/menu_button.png");
         menuButtonPressedTexture = new Texture("UI/new_ui/menu_button_press.png");
 
-        //Gate
-        gateTexture = new Texture(("Background/tiles/wall/door_closed.png"));
-        gateSprite = new Sprite(gateTexture);
-        gatePosition = new Vector2(144, 192);
-
-
-
         //Buttons
         float buttonSize = h * 0.2f;
         moveLeftButton = new Button("",0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -168,44 +122,68 @@ public class GameScreen implements Screen {
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
+        //player attack button
+        float screenWidth = Gdx.graphics.getWidth() - buttonSize;
+        attackButton = new Button("",screenWidth, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+
         pauseButton = new Button("", 10, Gdx.graphics.getHeight() - pauseButtonTexture.getHeight() - 250, buttonSize, buttonSize,pauseButtonTexture,pauseButtonPressedTexture);
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
-        lvlTwoButton = new Button("Let's start the adventure", 600,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
-
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
 
+        //items
+        redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
+        greenPotion = new Items(150,90,7,11,"Item/props_itens/potion_green.png");
 
-        //Collision
-        tileRectangle = new Rectangle();
-        MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
-        TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
-        tileRectangle.width = tileLayer.getTileWidth();
-        tileRectangle.height = tileLayer.getTileHeight();
+        //每个level的要创建的enemies在这里
+        //flyings
+        spawnFlying(140,120);
 
+        //goblins
+        spawnGoblin(140, 140);
 
+        //slimes
+        spawnSlime(140,160);
 
-
+        //boss只有一个不用多个生成
+        boss = new Boss();
         newGame();
     }
 
+    private void spawnFlying(float x, float y)
+    {
+        Flying newFlying = new Flying(x,y);
+        flyings.add(newFlying);
+    }
+
+    private void spawnGoblin(float x, float y)
+    {
+        Goblin newGoblin = new Goblin(x,y);
+        goblins.add(newGoblin);
+    }
+    private void spawnSlime(float x, float y)
+    {
+        Slime newSlime = new Slime(x,y);
+        slimes.add(newSlime);
+    }
 
 
     private void newGame() {
         gameState = GameState.PLAYING;
 
-
         //Translate camera to center of screen
         camera.position.x = 30; //The 16 is half the size of a tile
         camera.position.y = 30;
-
 
         //Player start location, you can have this stored in the tilemaze using an object layer.
         player.characterX = 120;
         player.characterY = 120;
 
+        //boss location
+        boss.x = 190;
+        boss.y = 120;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
@@ -230,9 +208,6 @@ public class GameScreen implements Screen {
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
 
-        //update the door animation
-        doorAnimation.update(f);
-
         //Draw Character
         //Apply the camera's transform to the SpriteBatch so the character is drawn in the correct
         //position on screen.
@@ -240,24 +215,27 @@ public class GameScreen implements Screen {
         spriteBatch.begin();
         //TODO player draw
         player.render(spriteBatch);
+
+        //render each loop enemies
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).render(spriteBatch);
+        }
+        boss.render(spriteBatch);
+
+        //items
+        redPotion.render(spriteBatch);
+        greenPotion.render(spriteBatch);
+
         spriteBatch.end();
-
-        // Draw the gate
-        if (!doorOpened) {
-            spriteBatch.begin();
-            gateSprite.setPosition(gatePosition.x, gatePosition.y);
-            gateSprite.draw(spriteBatch);
-            spriteBatch.end();
-        }
-
-        //Draw the door opening animation
-        if (doorOpened) {
-            TextureRegion currentFrame = doorAnimation.getCurrentFrame();
-            spriteBatch.begin();
-            spriteBatch.draw(currentFrame, gatePosition.x, gatePosition.y);
-            spriteBatch.end();
-        }
-
 
         //Draw UI
         uiBatch.begin();
@@ -269,6 +247,10 @@ public class GameScreen implements Screen {
                 moveDownButton.draw(uiBatch);
                 moveUpButton.draw(uiBatch);
                 pauseButton.draw(uiBatch);
+
+                //player attack
+                attackButton.draw(uiBatch);
+
                 break;
             //if gameState is Paused: Draw buttons
             case PAUSED:
@@ -276,11 +258,8 @@ public class GameScreen implements Screen {
                 exitToMainMenuButton.draw(uiBatch);
                 break;
             //if gameState is Complete: Draw Restart button
-            case FAILED:
-                restartButton.draw(uiBatch);
-                break;
             case COMPLETE:
-                lvlTwoButton.draw(uiBatch);
+                restartButton.draw(uiBatch);
                 break;
         }
         uiBatch.end();
@@ -288,6 +267,25 @@ public class GameScreen implements Screen {
     public void update(){
         //player update
         player.update();
+        //enemies update
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).update(this.player);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).update(this.player);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).update(this.player);
+        }
+
+        boss.update(this.player);
+        //items update
+        redPotion.update();
+        greenPotion.update();
+
         //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();
@@ -303,15 +301,18 @@ public class GameScreen implements Screen {
                 moveDownButton.update(checkTouch, touchX, touchY);
                 moveUpButton.update(checkTouch, touchX, touchY);
                 pauseButton.update(checkTouch,touchX,touchY);
+                attackButton.update(checkTouch,touchX,touchY);
 
                 float moveX = 0;
                 float moveY = 0;
                 if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || moveLeftButton.isDown) {
                     moveLeftButton.isDown = true;
+                    player.isRight = false;
                     moveX -= 1f;
                     player.setState(Player.PlayerState.walkLeft);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || moveRightButton.isDown) {
                     moveRightButton.isDown = true;
+                    player.isRight = true;
                     moveX += 1f;
                     player.setState(Player.PlayerState.walkRight);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || moveDownButton.isDown) {
@@ -333,6 +334,10 @@ public class GameScreen implements Screen {
                     buttonClickSound.play();
                 }
 
+                if(attackButton.isDown)
+                {
+                    player.attack();
+                }
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
                 Gdx.app.log("sb: ","delta x: " + player.playerDelta.x);
@@ -344,64 +349,37 @@ public class GameScreen implements Screen {
                     TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
 
                     //TODO Determine bounds to check within
-                    // Find top-right corner tile
-                    int right = (int) Math.ceil(Math.max(player.characterX + player.playerSprite.getWidth(),player.characterX + player.playerSprite.getWidth() + player.playerDelta.x));
-                    int top = (int) Math.ceil(Math.max(player.characterY + player.playerSprite.getHeight(),player.characterY + player.playerSprite.getHeight() + player.playerDelta.y));
-
-                    // Find bottom-left corner tile
-                    int left = (int) Math.floor(Math.min(player.characterX,player.characterX + player.playerDelta.x));
-                    int bottom = (int) Math.floor(Math.min(player.characterY,player.characterY + player.playerDelta.y));
-
-                    // Divide bounds by tile sizes to retrieve tile indices
-                    right /= tileLayer.getTileWidth();
-                    top /= tileLayer.getTileHeight();
-                    left /= tileLayer.getTileWidth();
-                    bottom /= tileLayer.getTileHeight();
 
                     //TODO Loop through selected tiles and correct by each axis
                     //EXTRA: Try counting down if moving left or down instead of counting up
-                    for (int y = bottom; y <= top; y++) {
-                        for (int x = left; x <= right; x++) {
-                            TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
-                            // If the cell is empty, ignore it
-                            if (targetCell == null) continue;
-                            // Otherwise correct against tested squares
-                            tileRectangle.x = x * tileLayer.getTileWidth();
-                            tileRectangle.y = y * tileLayer.getTileHeight();
-
-                            player.playerDeltaRectangle.x = player.characterX + player.playerDelta.x;
-                            player.playerDeltaRectangle.y = player.characterY;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.x = 0;
-
-                            player.playerDeltaRectangle.x = player.characterX;
-                            player.playerDeltaRectangle.y = player.characterY + player.playerDelta.y;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.y = 0;
-
-                        }
-                    }
-
-
-
-
 
                     //TODO Move player and camera
-                    player.playerSprite.translate(player.playerDelta.x, player.playerDelta.y);
+                    //playerSprite.translate(playerDelta.x, playerDelta.y);
                     player.characterX += player.playerDelta.x;
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
 
 
-                //TODO Check if player has met the winning condition
-                if (!doorOpened && player.getBoundingBox().overlaps(gateSprite.getBoundingRectangle())) {
-                    doorAnimation = new DoorAnimation();
-                    doorOpened = true;
-                    gameState = GameState.COMPLETE;
-
+                //if player hit items
+                if(player.getBoundingBox().overlaps(redPotion.getBoundingBox())){
+                    if(player.playerHealth<4){
+                        player.playerHealth+=1;
+                        redPotion.pickUp = true;
+                    }
                 }
+                if(player.getBoundingBox().overlaps(greenPotion.getBoundingBox())){
+                    if(player.playerHealth>0){
+                        player.playerHealth-=1;
+                        greenPotion.pickUp = true;
+                    }
+                }
+
+
+
+                //TODO Check if player has met the winning condition
+
                 break;
-
-
 
             case PAUSED:
                 resumeButton.update(checkTouch, touchX, touchY);
@@ -418,7 +396,7 @@ public class GameScreen implements Screen {
                 }
                 break;
 
-            case FAILED:
+            case COMPLETE:
                 //Poll for input
                 restartButton.update(checkTouch, touchX, touchY);
 
@@ -426,21 +404,10 @@ public class GameScreen implements Screen {
                     restartButton.isDown = true;
                     restartActive = true;
                 } else if (restartActive) {
-                    doorOpened = false;
                     newGame();
                 }
                 break;
-
-            case COMPLETE:
-                lvlTwoButton.update(checkTouch, touchX, touchY);
-                if (Gdx.input.isKeyPressed(Input.Keys.UP) || lvlTwoButton.isDown) {
-                    isLvlTwoButtonDown = true;
-                    doorOpened = false;
-                    game.setScreen(MyGdxGame.levelTwoScreen);
-                }
-                break;
         }
-
     }
 
 
@@ -456,9 +423,6 @@ public class GameScreen implements Screen {
         menuButtonTexture.dispose();
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
-        gateTexture.dispose();
-
-
 
     }
     @Override
