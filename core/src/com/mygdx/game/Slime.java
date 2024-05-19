@@ -13,14 +13,18 @@ public class Slime extends Enemies{
     Animation walkRightAni;
     Animation idleLeftAni;
     Animation idleRightAni;
+    Animation hitEffect;
     Array<TextureRegion> walkLeftFrames = new Array<>();
     Array<TextureRegion> walkRightFrames = new Array<>();
     Array<TextureRegion> idleLeftFrames = new Array<>();
     Array<TextureRegion> idleRightFrames = new Array<>();
+    Array<TextureRegion> hitEffectFrames = new Array<>();
     TextureRegion currentFrame;
     float patrolTime = 2;
     float moveCD;
     float stateTime;
+    float hitTime;
+
     float enemySpeed = 30;
     public enum MoveState
     {
@@ -49,6 +53,7 @@ public class Slime extends Enemies{
 
     public Slime(float x, float y)
     {
+        isHit = false;
         this.x = x;
         this.y = y;
         moveState = MoveState.IDLE_RIGHT;
@@ -70,7 +75,12 @@ public class Slime extends Enemies{
         {
             idleRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/slime/idle_right/slime_idle_R" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
+        }
         stateTime = 0.0f;
+        hitTime = 0.0f;
         //enemy move animation
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
@@ -89,6 +99,9 @@ public class Slime extends Enemies{
         angle = 0;
         xDegree = 0;
         yDegree = 0;
+
+        //hit effect
+        hitEffect = new Animation(0.19f, hitEffectFrames);
     }
 
     public Rectangle getBoundingBox(){
@@ -114,7 +127,6 @@ public class Slime extends Enemies{
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
-            isHit = false;
         }
         Gdx.app.log("checki: ", "cd: " + boostingCD);
         float dt = Gdx.graphics.getDeltaTime();
@@ -268,6 +280,17 @@ public class Slime extends Enemies{
                 }
                 break;
             default:
+        }
+        //render hit
+        if(isHit )
+        {
+            hitTime += Gdx.graphics.getDeltaTime();
+            currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));
+            batch.draw(currentFrame,this.x + 4,this.y + 4);
+        }
+        else
+        {
+            hitTime = 0;
         }
     }
 

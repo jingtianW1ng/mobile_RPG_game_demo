@@ -48,9 +48,11 @@ public class Flying extends Enemies{
     float xDegree;
     float yDegree;
     float waitCD;
+    boolean isHit;
     public Flying(float x, float y)
     {
         alreadyHit = false;
+        isHit = false;
         this.x = x;
         this.y = y;
         moveState = MoveState.IDLE_RIGHT;
@@ -238,9 +240,8 @@ public class Flying extends Enemies{
             default:
         }
     }
-    public void render(SpriteBatch batch, Player player) {
+    public void render(SpriteBatch batch) {
         stateTime += Gdx.graphics.getDeltaTime();
-        Gdx.app.log("hit: ","time is: " + player.isHit);
 
         //render missiles
         for(int i = 0; i < missiles.size; i++)
@@ -278,7 +279,7 @@ public class Flying extends Enemies{
         }
 
         //render hit
-        if(player.isHit )
+        if(isHit )
         {
             hitTime += Gdx.graphics.getDeltaTime();
             currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));

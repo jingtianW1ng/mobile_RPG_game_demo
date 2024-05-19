@@ -237,11 +237,11 @@ public class LevelTwoScreen implements Screen {
         //render each loop enemies
         for(int i = 0; i < flyings.size; i++)
         {
-            flyings.get(i).render(spriteBatch, player);
+            flyings.get(i).render(spriteBatch);
         }
         for(int i = 0; i < goblins.size; i++)
         {
-            goblins.get(i).render(spriteBatch, player);
+            goblins.get(i).render(spriteBatch);
         }
         for(int i = 0; i < slimes.size; i++)
         {

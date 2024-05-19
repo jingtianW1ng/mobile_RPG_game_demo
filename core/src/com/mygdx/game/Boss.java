@@ -51,11 +51,13 @@ public class Boss extends Enemies{
     float animeTime;
     Rectangle AttackBound;
     Rectangle bossBound;
+    boolean isHitPlayer;
     boolean isHit;
     float wakeupTime;
     float bossHealth = 10;
     public Boss()
     {
+        isHit = false;
         moveState = MoveState.IDLE_RIGHT;
         this.currentState = STATE.WAKEUP;
         //animation
@@ -144,7 +146,7 @@ public class Boss extends Enemies{
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
-            isHit = false;
+            isHitPlayer = false;
         }
         Gdx.app.log("checki: ", "cd: " + attackCD);
         float dt = Gdx.graphics.getDeltaTime();
@@ -254,11 +256,11 @@ public class Boss extends Enemies{
                     //check if overlap with player when enemy attacking
                     if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3)
                     {
-                        if(!isHit)
+                        if(!isHitPlayer)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
                             player.playerHealth -= 1;
-                            isHit = true;
+                            isHitPlayer = true;
                         }
                     }
                 }
@@ -274,11 +276,11 @@ public class Boss extends Enemies{
                     AttackBound.set(x - 32,y,32,32);
                     if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3)
                     {
-                        if(!isHit)
+                        if(!isHitPlayer)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
                             player.playerHealth -= 1;
-                            isHit = true;
+                            isHitPlayer = true;
                         }
                     }
                 }

@@ -1,12 +1,8 @@
 package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
@@ -47,11 +43,13 @@ public class Goblin extends Enemies{
     float hitTime;
     Rectangle AttackBound;
     Rectangle enemyBound;
+    boolean isHitPlayer;
     boolean isHit;
     float goblinHeath = 2;
 
     public Goblin(float x, float y)
     {
+        isHit = false;
         this.x = x;
         this.y = y;
         moveState = MoveState.IDLE_RIGHT;
@@ -135,7 +133,7 @@ public class Goblin extends Enemies{
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
-            isHit = false;
+            isHitPlayer = false;
         }
         Gdx.app.log("checki: ", "cd: " + attackCD);
         float dt = Gdx.graphics.getDeltaTime();
@@ -298,11 +296,11 @@ public class Goblin extends Enemies{
                     //check if overlap with player when enemy attacking
                     if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
                     {
-                        if(!isHit)
+                        if(!isHitPlayer)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
                             player.playerHealth -= 1;
-                            isHit = true;
+                            isHitPlayer = true;
                         }
                     }
                     moveState = MoveState.IDLE_RIGHT;
@@ -319,11 +317,11 @@ public class Goblin extends Enemies{
                     AttackBound.set(x - 17,y,16,16);
                     if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 0.3)
                     {
-                        if(!isHit)
+                        if(!isHitPlayer)
                         {
                             Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
                             player.playerHealth -= 1;
-                            isHit = true;
+                            isHitPlayer = true;
                         }
                     }
                     moveState = MoveState.IDLE_LEFT;
@@ -333,7 +331,7 @@ public class Goblin extends Enemies{
             default:
         }
     }
-    public void render(SpriteBatch batch, Player player) {
+    public void render(SpriteBatch batch) {
         stateTime += Gdx.graphics.getDeltaTime();
         //render
         switch(this.currentState) {
@@ -394,7 +392,7 @@ public class Goblin extends Enemies{
         }
 
         //render hit
-        if(player.isHit )
+        if(isHit )
         {
             hitTime += Gdx.graphics.getDeltaTime();
             currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));

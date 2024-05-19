@@ -59,7 +59,6 @@ public class Player {
     boolean isRight;
     float attackTime;
     boolean attacked;
-    boolean isHit;
 
 
     //player movement delta
@@ -140,7 +139,6 @@ public class Player {
         AttackBound = new Rectangle();
 
         attacked = false;
-        isHit = false;
     }
 
     public void setState(PlayerState state){
@@ -163,8 +161,20 @@ public class Player {
     {
         if(state != PlayerState.attacking)
         {
-            isHit = false;
             AttackBound.set(0,0,0,0);
+            for(int i = 0; i < flyings.size; i++)
+            {
+                flyings.get(i).isHit = false;
+            }
+            for(int i = 0; i < goblins.size; i++)
+            {
+                goblins.get(i).isHit = false;
+            }
+            for(int i = 0; i < slimes.size; i++)
+            {
+                slimes.get(i).isHit = false;
+            }
+            boss.isHit = false;
         }
         Gdx.app.log("checkH","flying heath is: " + flyings.get(0).flyingHealth);
 
@@ -198,7 +208,7 @@ public class Player {
                             if(AttackBound.overlaps(flyings.get(i).enemyBound))
                             {
                                 flyings.get(i).flyingHealth -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                flyings.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < goblins.size; i++)
@@ -206,7 +216,7 @@ public class Player {
                             if(AttackBound.overlaps(goblins.get(i).enemyBound))
                             {
                                 goblins.get(i).goblinHeath -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                goblins.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < slimes.size; i++)
@@ -214,13 +224,13 @@ public class Player {
                             if(AttackBound.overlaps(slimes.get(i).enemyBound))
                             {
                                 slimes.get(i).slimeHeath -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                slimes.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         if(AttackBound.overlaps(boss.bossBound))
                         {
                             boss.bossHealth -= 1;
-                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            boss.isHit = attackTime >= 0.2 && attackTime <= 0.65;
                         }
                         attacked = true;
                     }
@@ -244,7 +254,7 @@ public class Player {
                             if(AttackBound.overlaps(flyings.get(i).enemyBound))
                             {
                                 flyings.get(i).flyingHealth -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                flyings.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < goblins.size; i++)
@@ -252,7 +262,7 @@ public class Player {
                             if(AttackBound.overlaps(goblins.get(i).enemyBound))
                             {
                                 goblins.get(i).goblinHeath -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                goblins.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < slimes.size; i++)
@@ -260,13 +270,13 @@ public class Player {
                             if(AttackBound.overlaps(slimes.get(i).enemyBound))
                             {
                                 slimes.get(i).slimeHeath -= 1;
-                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                slimes.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         if(AttackBound.overlaps(boss.bossBound))
                         {
                             boss.bossHealth -= 1;
-                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            boss.isHit = attackTime >= 0.2 && attackTime <= 0.65;
                         }
                         attacked = true;
                     }
