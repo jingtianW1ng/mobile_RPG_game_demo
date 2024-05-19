@@ -14,16 +14,16 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+
 
 public class LevelTwoScreen implements Screen {
 
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
-
-    // constructor to keep a reference to the main Game class
 
     public enum GameState { PLAYING, PAUSED, COMPLETE, FAILED };
 
@@ -43,6 +43,11 @@ public class LevelTwoScreen implements Screen {
     Player player;
     float dt = Gdx.graphics.getDeltaTime();
 
+    //Enemies
+    Array<Flying> flyings = new Array<>();
+    Array<Goblin> goblins = new Array<>();
+    Array<Slime> slimes = new Array<>();
+    Boss boss;
     //UI textures
     Texture buttonSquareTexture;
     Texture buttonSquareDownTexture;
@@ -54,7 +59,6 @@ public class LevelTwoScreen implements Screen {
     Texture pauseButtonPressedTexture;
     Texture menuButtonTexture;
     Texture menuButtonPressedTexture;
-
     //UI Buttons
     Button moveLeftButton;
     Button moveRightButton;
@@ -63,6 +67,8 @@ public class LevelTwoScreen implements Screen {
     Button restartButton;
     //Just use this to only restart when the restart button is released instead of immediately as it's pressed
 
+    //player attack button
+    Button attackButton;
     Button pauseButton;
     Button resumeButton;
     Button exitToMainMenuButton;
@@ -71,18 +77,24 @@ public class LevelTwoScreen implements Screen {
     boolean isExitButtonDown = false;
     boolean isPauseButtonDown = false;
 
+
     //Sound
     Sound buttonClickSound;
-
 
     //Storage class for collision
     Rectangle tileRectangle;
 
+
     boolean restartActive;
 
+    //item
+    Items redPotion;
+    Items greenPotion;
+
+    Texture bosstex;
+    Texture goblinTex;
     public LevelTwoScreen(MyGdxGame game) {this.game = game;}
     public void create() {
-        Gdx.app.log("LevelTwoScreen: ","levelTwoScreen create");
 
         //Rendering
         spriteBatch = new SpriteBatch();
@@ -100,7 +112,6 @@ public class LevelTwoScreen implements Screen {
 
         //player
         player = new Player(this.game);
-
         //Texture
         buttonSquareTexture = new Texture("UI/buttonSquare_blue.png");
         buttonSquareDownTexture = new Texture("UI/buttonSquare_beige_pressed.png");
@@ -121,9 +132,14 @@ public class LevelTwoScreen implements Screen {
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
+        //player attack button
+        float screenWidth = Gdx.graphics.getWidth() - buttonSize;
+        attackButton = new Button("",screenWidth, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
+
         pauseButton = new Button("", 10, Gdx.graphics.getHeight() - pauseButtonTexture.getHeight() - 250, buttonSize, buttonSize,pauseButtonTexture,pauseButtonPressedTexture);
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
+
 
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
@@ -135,8 +151,42 @@ public class LevelTwoScreen implements Screen {
         tileRectangle.width = tileLayer.getTileWidth();
         tileRectangle.height = tileLayer.getTileHeight();
 
+        //items
+        redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
+        greenPotion = new Items(150,90,7,11,"Item/props_itens/potion_green.png");
+
+        //每个level的要创建的enemies在这里
+        //flyings
+        spawnFlying(140,120);
+
+        //goblins
+        spawnGoblin(140, 140);
+
+        //slimes
+        spawnSlime(140,160);
+
+        //boss只有一个不用多个生成
+        boss = new Boss();
         newGame();
     }
+
+    private void spawnFlying(float x, float y)
+    {
+        Flying newFlying = new Flying(x,y);
+        flyings.add(newFlying);
+    }
+
+    private void spawnGoblin(float x, float y)
+    {
+        Goblin newGoblin = new Goblin(x,y);
+        goblins.add(newGoblin);
+    }
+    private void spawnSlime(float x, float y)
+    {
+        Slime newSlime = new Slime(x,y);
+        slimes.add(newSlime);
+    }
+
 
     private void newGame() {
         gameState = GameState.PLAYING;
@@ -149,9 +199,14 @@ public class LevelTwoScreen implements Screen {
         player.characterX = 40;
         player.characterY = 680;
 
+        //boss location
+        boss.x = 190;
+        boss.y = 120;
+
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
     }
+
 
     public void render(float f) {
         //set dt
@@ -178,7 +233,28 @@ public class LevelTwoScreen implements Screen {
         spriteBatch.begin();
         //TODO player draw
         player.render(spriteBatch);
+
+        //render each loop enemies
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).render(spriteBatch);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).render(spriteBatch);
+        }
+        boss.render(spriteBatch);
+
+        //items
+        redPotion.render(spriteBatch);
+        greenPotion.render(spriteBatch);
+
         spriteBatch.end();
+
 
         //Draw UI
         uiBatch.begin();
@@ -190,6 +266,10 @@ public class LevelTwoScreen implements Screen {
                 moveDownButton.draw(uiBatch);
                 moveUpButton.draw(uiBatch);
                 pauseButton.draw(uiBatch);
+
+                //player attack
+                attackButton.draw(uiBatch);
+
                 break;
             //if gameState is Paused: Draw buttons
             case PAUSED:
@@ -209,6 +289,25 @@ public class LevelTwoScreen implements Screen {
     public void update(){
         //player update
         player.update();
+        //enemies update
+        for(int i = 0; i < flyings.size; i++)
+        {
+            flyings.get(i).update(this.player);
+        }
+        for(int i = 0; i < goblins.size; i++)
+        {
+            goblins.get(i).update(this.player);
+        }
+        for(int i = 0; i < slimes.size; i++)
+        {
+            slimes.get(i).update(this.player);
+        }
+
+        boss.update(this.player);
+        //items update
+        redPotion.update();
+        greenPotion.update();
+
         //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
         int touchX = Gdx.input.getX();
@@ -224,15 +323,18 @@ public class LevelTwoScreen implements Screen {
                 moveDownButton.update(checkTouch, touchX, touchY);
                 moveUpButton.update(checkTouch, touchX, touchY);
                 pauseButton.update(checkTouch,touchX,touchY);
+                attackButton.update(checkTouch,touchX,touchY);
 
                 float moveX = 0;
                 float moveY = 0;
                 if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || moveLeftButton.isDown) {
                     moveLeftButton.isDown = true;
+                    player.isRight = false;
                     moveX -= 1f;
                     player.setState(Player.PlayerState.walkLeft);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || moveRightButton.isDown) {
                     moveRightButton.isDown = true;
+                    player.isRight = true;
                     moveX += 1f;
                     player.setState(Player.PlayerState.walkRight);
                 } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || moveDownButton.isDown) {
@@ -254,6 +356,10 @@ public class LevelTwoScreen implements Screen {
                     buttonClickSound.play();
                 }
 
+                if(attackButton.isDown)
+                {
+                    player.attack();
+                }
 
                 player.playerDelta.x = moveX * MOVEMENT_SPEED * dt;
                 Gdx.app.log("sb: ","delta x: " + player.playerDelta.x);
@@ -308,6 +414,23 @@ public class LevelTwoScreen implements Screen {
                     camera.translate(player.playerDelta);
                 }
 
+
+                //if player hit items
+                if(player.getBoundingBox().overlaps(redPotion.getBoundingBox())){
+                    if(player.playerHealth<4){
+                        player.playerHealth+=1;
+                        redPotion.pickUp = true;
+                    }
+                }
+                if(player.getBoundingBox().overlaps(greenPotion.getBoundingBox())){
+                    if(player.playerHealth>0){
+                        player.playerHealth-=1;
+                        greenPotion.pickUp = true;
+                    }
+                }
+
+
+
                 //TODO Check if player has met the winning condition
                 break;
 
@@ -321,8 +444,8 @@ public class LevelTwoScreen implements Screen {
 
                 exitToMainMenuButton.update(checkTouch, touchX, touchY);
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || exitToMainMenuButton.isDown) {
-                    buttonClickSound.play();
                     game.setScreen(MyGdxGame.menuScreen); // Return to the main menu
+                    buttonClickSound.play();
                 }
                 break;
 
@@ -339,11 +462,11 @@ public class LevelTwoScreen implements Screen {
                 break;
 
             case COMPLETE:
-
                 break;
         }
-
     }
+
+
 
     @Override
     public void dispose() {
@@ -356,6 +479,7 @@ public class LevelTwoScreen implements Screen {
         menuButtonTexture.dispose();
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
+
     }
     @Override
     public void resize(int width, int height) {

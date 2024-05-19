@@ -60,7 +60,7 @@ public class MenuScreen implements Screen{
 
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("fantacyBackgroundMusic.wav"));
         backgroundMusic.setLooping(true);
-        backgroundMusic.play();
+        //backgroundMusic.play();
 
 
     }

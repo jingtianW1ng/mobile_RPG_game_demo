@@ -8,6 +8,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+
 
 
 public class Player {
@@ -62,6 +64,12 @@ public class Player {
     float dt;
     Vector2 playerDelta;
 
+
+    Texture playerTexture;
+    Sprite playerSprite;
+    Rectangle playerDeltaRectangle;
+
+
     public Player (MyGdxGame game ){
         //texture goes here
         playerDelta = new Vector2();
@@ -73,6 +81,13 @@ public class Player {
         {
             healthUi[i] = new Texture("UI/new_ui/health_ui/health_ui"+i+".png");
         }
+
+
+        playerTexture = new Texture("Player/Idel_right/IR0.png");
+        playerSprite = new Sprite(playerTexture);
+        playerSprite.setSize(11,16);
+        playerDeltaRectangle = new Rectangle(0, 0, playerSprite.getWidth(), playerSprite.getHeight());
+
 
 
         //animation
@@ -137,6 +152,9 @@ public class Player {
     {
         state = PlayerState.attacking;
     }
+
+
+
     public void update(){
         float dt = Gdx.graphics.getDeltaTime();
         switch (state)

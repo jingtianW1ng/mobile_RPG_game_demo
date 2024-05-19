@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -15,13 +16,17 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+
 
 public class GameScreen implements Screen {
 
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
 
-    public enum GameState { PLAYING, PAUSED, COMPLETE };
+    public enum GameState { PLAYING, PAUSED, COMPLETE, FAILED };
 
     GameState gameState = GameState.PLAYING;
 
@@ -68,12 +73,27 @@ public class GameScreen implements Screen {
     Button pauseButton;
     Button resumeButton;
     Button exitToMainMenuButton;
+    Button lvlTwoButton;
     boolean isResumeButtonDown = false;
     boolean isExitButtonDown = false;
     boolean isPauseButtonDown = false;
+    boolean isLvlTwoButtonDown = false;
 
     //Sound
     Sound buttonClickSound;
+
+    //Gate
+    Texture gateTexture;
+    Sprite gateSprite;
+    Vector2 gatePosition;
+
+    //Door animation
+    DoorAnimation doorAnimation = new DoorAnimation();
+    boolean doorOpened = false;
+
+    //Storage class for collision
+    Rectangle tileRectangle;
+
 
     boolean restartActive;
 
@@ -114,6 +134,11 @@ public class GameScreen implements Screen {
         menuButtonTexture = new Texture("UI/new_ui/menu_button.png");
         menuButtonPressedTexture = new Texture("UI/new_ui/menu_button_press.png");
 
+        //Gate
+        gateTexture = new Texture(("Background/tiles/wall/door_closed.png"));
+        gateSprite = new Sprite(gateTexture);
+        gatePosition = new Vector2(144, 192);
+
         //Buttons
         float buttonSize = h * 0.2f;
         moveLeftButton = new Button("",0.0f, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -130,8 +155,18 @@ public class GameScreen implements Screen {
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
+        lvlTwoButton = new Button("Let's start the adventure", 600,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
+
+
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
+
+        //Collision
+        tileRectangle = new Rectangle();
+        MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
+        TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
+        tileRectangle.width = tileLayer.getTileWidth();
+        tileRectangle.height = tileLayer.getTileHeight();
 
         //items
         redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
@@ -208,6 +243,9 @@ public class GameScreen implements Screen {
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
 
+        //update the door animation
+        doorAnimation.update(f);
+
         //Draw Character
         //Apply the camera's transform to the SpriteBatch so the character is drawn in the correct
         //position on screen.
@@ -237,6 +275,24 @@ public class GameScreen implements Screen {
 
         spriteBatch.end();
 
+
+        // Draw the gate
+        if (!doorOpened) {
+            spriteBatch.begin();
+            gateSprite.setPosition(gatePosition.x, gatePosition.y);
+            gateSprite.draw(spriteBatch);
+            spriteBatch.end();
+        }
+
+        //Draw the door opening animation
+        if (doorOpened) {
+            TextureRegion currentFrame = doorAnimation.getCurrentFrame();
+            spriteBatch.begin();
+            spriteBatch.draw(currentFrame, gatePosition.x, gatePosition.y);
+            spriteBatch.end();
+        }
+
+
         //Draw UI
         uiBatch.begin();
         switch(gameState) {
@@ -258,8 +314,11 @@ public class GameScreen implements Screen {
                 exitToMainMenuButton.draw(uiBatch);
                 break;
             //if gameState is Complete: Draw Restart button
-            case COMPLETE:
+            case FAILED:
                 restartButton.draw(uiBatch);
+                break;
+            case COMPLETE:
+                lvlTwoButton.draw(uiBatch);
                 break;
         }
         uiBatch.end();
@@ -349,12 +408,44 @@ public class GameScreen implements Screen {
                     TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
 
                     //TODO Determine bounds to check within
+                    // Find top-right corner tile
+                    int right = (int) Math.ceil(Math.max(player.characterX + player.playerSprite.getWidth(),player.characterX + player.playerSprite.getWidth() + player.playerDelta.x));
+                    int top = (int) Math.ceil(Math.max(player.characterY + player.playerSprite.getHeight(),player.characterY + player.playerSprite.getHeight() + player.playerDelta.y));
+
+                    // Find bottom-left corner tile
+                    int left = (int) Math.floor(Math.min(player.characterX,player.characterX + player.playerDelta.x));
+                    int bottom = (int) Math.floor(Math.min(player.characterY,player.characterY + player.playerDelta.y));
+
+                    // Divide bounds by tile sizes to retrieve tile indices
+                    right /= tileLayer.getTileWidth();
+                    top /= tileLayer.getTileHeight();
+                    left /= tileLayer.getTileWidth();
+                    bottom /= tileLayer.getTileHeight();
 
                     //TODO Loop through selected tiles and correct by each axis
                     //EXTRA: Try counting down if moving left or down instead of counting up
+                    for (int y = bottom; y <= top; y++) {
+                        for (int x = left; x <= right; x++) {
+                            TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                            // If the cell is empty, ignore it
+                            if (targetCell == null) continue;
+                            // Otherwise correct against tested squares
+                            tileRectangle.x = x * tileLayer.getTileWidth();
+                            tileRectangle.y = y * tileLayer.getTileHeight();
+
+                            player.playerDeltaRectangle.x = player.characterX + player.playerDelta.x;
+                            player.playerDeltaRectangle.y = player.characterY;
+                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.x = 0;
+
+                            player.playerDeltaRectangle.x = player.characterX;
+                            player.playerDeltaRectangle.y = player.characterY + player.playerDelta.y;
+                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.y = 0;
+
+                        }
+                    }
 
                     //TODO Move player and camera
-                    //playerSprite.translate(playerDelta.x, playerDelta.y);
+                    player.playerSprite.translate(player.playerDelta.x, player.playerDelta.y);
                     player.characterX += player.playerDelta.x;
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
@@ -378,7 +469,12 @@ public class GameScreen implements Screen {
 
 
                 //TODO Check if player has met the winning condition
+                if (!doorOpened && player.getBoundingBox().overlaps(gateSprite.getBoundingRectangle())) {
+                    doorAnimation = new DoorAnimation();
+                    doorOpened = true;
+                    gameState = GameState.COMPLETE;
 
+                }
                 break;
 
             case PAUSED:
@@ -396,7 +492,7 @@ public class GameScreen implements Screen {
                 }
                 break;
 
-            case COMPLETE:
+            case FAILED:
                 //Poll for input
                 restartButton.update(checkTouch, touchX, touchY);
 
@@ -404,7 +500,17 @@ public class GameScreen implements Screen {
                     restartButton.isDown = true;
                     restartActive = true;
                 } else if (restartActive) {
+                    doorOpened = false;
                     newGame();
+                }
+                break;
+
+            case COMPLETE:
+                lvlTwoButton.update(checkTouch, touchX, touchY);
+                if (Gdx.input.isKeyPressed(Input.Keys.UP) || lvlTwoButton.isDown) {
+                    isLvlTwoButtonDown = true;
+                    doorOpened = false;
+                    game.setScreen(MyGdxGame.levelTwoScreen);
                 }
                 break;
         }
