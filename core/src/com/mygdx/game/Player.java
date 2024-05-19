@@ -176,7 +176,7 @@ public class Player {
             }
             boss.isHit = false;
         }
-        Gdx.app.log("checkH","flying heath is: " + flyings.get(0).flyingHealth);
+        Gdx.app.log("checkH","flying heath is: " + boss.bossHealth);
 
         float dt = Gdx.graphics.getDeltaTime();
         switch (state)

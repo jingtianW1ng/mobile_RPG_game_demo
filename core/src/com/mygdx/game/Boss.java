@@ -19,6 +19,7 @@ public class Boss extends Enemies{
     Animation deathRight;
     Animation wakeupLeft;
     Animation wakeupRight;
+    Animation hitEffect;
     Array<TextureRegion> walkLeftFrames = new Array<>();
     Array<TextureRegion> walkRightFrames = new Array<>();
     Array<TextureRegion> idleLeftFrames = new Array<>();
@@ -31,11 +32,13 @@ public class Boss extends Enemies{
     Array<TextureRegion> deathRightFrames = new Array<>();
     Array<TextureRegion> wakeupLeftFrames = new Array<>();
     Array<TextureRegion> wakeupRightFrames = new Array<>();
+    Array<TextureRegion> hitEffectFrames = new Array<>();
     TextureRegion currentFrame;
     float patrolTime = 2;
     float moveCD;
     float stateTime;
     float enemySpeed = 30;
+    boolean isWeak = false;
     public enum MoveState
     {
         IDLE_LEFT,
@@ -54,6 +57,7 @@ public class Boss extends Enemies{
     boolean isHitPlayer;
     boolean isHit;
     float wakeupTime;
+    float hitTime;
     float bossHealth = 10;
     public Boss()
     {
@@ -109,7 +113,12 @@ public class Boss extends Enemies{
         {
             wakeupRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/wakeup_right/golemSteel - wakeup" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
+        }
         stateTime = 0.0f;
+        hitTime = 0.0f;
         //enemy move animation
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
@@ -123,11 +132,13 @@ public class Boss extends Enemies{
         hitRight = new Animation(0.2f, hitRightFrames);
         //death
         deathLeft = new Animation(0.2f, deathLeftFrames);
-        deathLeft = new Animation(0.2f, deathRightFrames);
+        deathRight = new Animation(0.2f, deathRightFrames);
         //wakeUp
         wakeupLeft = new Animation(0.2f, wakeupLeftFrames);
         wakeupRight = new Animation(0.2f, wakeupRightFrames);
 
+        //hit effect
+        hitEffect = new Animation(0.19f, hitEffectFrames);
 
         isRight = true;
         canAttack = false;
@@ -135,13 +146,13 @@ public class Boss extends Enemies{
         //attack rectangle
         AttackBound = new Rectangle();
 
-        bossBound = new Rectangle(x - 41,y - 39,26,28);
+        bossBound = new Rectangle(x,y,26,28);
     }
 
 
     public void update(Player player){
-        bossBound.setPosition(x - 41,y - 39);
-        Gdx.app.log("posb: ", "state is: " +currentState);
+        bossBound.setPosition(x,y);
+        Gdx.app.log("posb: ", "state is: " + player.getBoundingBox().overlaps(bossBound));
 
         if(this.currentState != STATE.ATTACKING)
         {
@@ -153,6 +164,10 @@ public class Boss extends Enemies{
         switch(this.currentState) {
             case WAKEUP:
                 if(distanceFrom(player) <= 60)
+                {
+                    isWeak = true;
+                }
+                if(isWeak)
                 {
                     wakeupTime += dt;
                     if(wakeupLeft.isAnimationFinished(wakeupTime))
@@ -332,6 +347,18 @@ public class Boss extends Enemies{
                 }
                 break;
             default:
+        }
+
+        //render hit
+        if(isHit)
+        {
+            hitTime += Gdx.graphics.getDeltaTime();
+            currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));
+            batch.draw(currentFrame,this.x + 4,this.y + 8);
+        }
+        else
+        {
+            hitTime = 0;
         }
     }
 
