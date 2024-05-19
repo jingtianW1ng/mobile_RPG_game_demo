@@ -17,12 +17,14 @@ public class Goblin extends Enemies{
     Animation idleRightAni;
     Animation slashLeft;
     Animation slashRight;
+    Animation hitEffect;
     Array<TextureRegion> walkLeftFrames = new Array<>();
     Array<TextureRegion> walkRightFrames = new Array<>();
     Array<TextureRegion> idleLeftFrames = new Array<>();
     Array<TextureRegion> idleRightFrames = new Array<>();
     Array<TextureRegion> slashLeftFrames = new Array<>();
     Array<TextureRegion> slashRightFrames = new Array<>();
+    Array<TextureRegion> hitEffectFrames = new Array<>();
     TextureRegion currentFrame;
     float patrolTime = 2;
     float moveCD;
@@ -42,6 +44,7 @@ public class Goblin extends Enemies{
     float attackFrequency = 0.5f;
     float attackCD;
     float animeTime;
+    float hitTime;
     Rectangle AttackBound;
     Rectangle enemyBound;
     boolean isHit;
@@ -78,7 +81,12 @@ public class Goblin extends Enemies{
         {
             slashRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/slash_right/slash_effect_R" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
+        }
         stateTime = 0.0f;
+        hitTime = 0.0f;
         //enemy move animation
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
@@ -87,6 +95,8 @@ public class Goblin extends Enemies{
         //attack effect
         slashLeft =  new Animation(0.2f, slashLeftFrames);
         slashRight = new Animation(0.2f, slashRightFrames);
+        //hit effect
+        hitEffect = new Animation(0.19f, hitEffectFrames);
 
 
         isRight = true;
@@ -323,7 +333,7 @@ public class Goblin extends Enemies{
             default:
         }
     }
-    public void render(SpriteBatch batch) {
+    public void render(SpriteBatch batch, Player player) {
         stateTime += Gdx.graphics.getDeltaTime();
         //render
         switch(this.currentState) {
@@ -381,6 +391,18 @@ public class Goblin extends Enemies{
                 }
                 break;
             default:
+        }
+
+        //render hit
+        if(player.isHit )
+        {
+            hitTime += Gdx.graphics.getDeltaTime();
+            currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));
+            batch.draw(currentFrame,this.x + 4,this.y + 4);
+        }
+        else
+        {
+            hitTime = 0;
         }
     }
 
