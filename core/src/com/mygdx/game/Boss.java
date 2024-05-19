@@ -13,8 +13,8 @@ public class Boss extends Enemies{
     Animation idleRightAni;
     Animation attackLeft;
     Animation attackRight;
-    Animation hitLeft;
-    Animation hitRight;
+    Animation hurtLeft;
+    Animation hurtRight;
     Animation deathLeft;
     Animation deathRight;
     Animation wakeupLeft;
@@ -26,16 +26,16 @@ public class Boss extends Enemies{
     Array<TextureRegion> idleRightFrames = new Array<>();
     Array<TextureRegion> attackLeftFrames = new Array<>();
     Array<TextureRegion> attackRightFrames = new Array<>();
-    Array<TextureRegion> hitLeftFrames = new Array<>();
-    Array<TextureRegion> hitRightFrames = new Array<>();
+    Array<TextureRegion> hurtLeftFrames = new Array<>();
+    Array<TextureRegion> hurtRightFrames = new Array<>();
     Array<TextureRegion> deathLeftFrames = new Array<>();
     Array<TextureRegion> deathRightFrames = new Array<>();
     Array<TextureRegion> wakeupLeftFrames = new Array<>();
     Array<TextureRegion> wakeupRightFrames = new Array<>();
     Array<TextureRegion> hitEffectFrames = new Array<>();
     TextureRegion currentFrame;
-    float patrolTime = 2;
-    float moveCD;
+    float hurtTime;
+    float deathTime;
     float stateTime;
     float enemySpeed = 30;
     boolean isWeak = false;
@@ -59,9 +59,11 @@ public class Boss extends Enemies{
     float wakeupTime;
     float hitTime;
     float bossHealth = 10;
+    float hurtCounter;
     public Boss()
     {
         isHit = false;
+        hurtCounter = 0;
         moveState = MoveState.IDLE_RIGHT;
         this.currentState = STATE.WAKEUP;
         //animation
@@ -91,11 +93,11 @@ public class Boss extends Enemies{
         }
         for(int i = 1; i < 8; i++)
         {
-            hitLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_left/golemSteel - hit" + i + ".png"))));
+            hurtLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_left/golemSteel - hit" + i + ".png"))));
         }
         for(int i = 1; i < 8; i++)
         {
-            hitRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_right/golemSteel - hit" + i + ".png"))));
+            hurtRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Boss/golem_steel/hit_right/golemSteel - hit" + i + ".png"))));
         }
         for(int i = 1; i < 15; i++)
         {
@@ -128,8 +130,8 @@ public class Boss extends Enemies{
         attackLeft =  new Animation(0.1f, attackLeftFrames);
         attackRight = new Animation(0.1f, attackRightFrames);
         //hit
-        hitLeft = new Animation(0.2f, hitLeftFrames);
-        hitRight = new Animation(0.2f, hitRightFrames);
+        hurtLeft = new Animation(0.2f, hurtLeftFrames);
+        hurtRight = new Animation(0.2f, hurtRightFrames);
         //death
         deathLeft = new Animation(0.2f, deathLeftFrames);
         deathRight = new Animation(0.2f, deathRightFrames);
@@ -177,6 +179,16 @@ public class Boss extends Enemies{
                 }
                 break;
             case CHASING:
+                if(bossHealth <= 0)
+                {
+                    this.currentState = STATE.DEATH;
+                }
+                //check hurt counter
+                if(hurtCounter >= 5)
+                {
+                    this.currentState = STATE.HURTING;
+                    hurtCounter = 0;
+                }
                 //try to move near the player
                 if(distanceFrom(player) < 20)
                 {
@@ -255,9 +267,17 @@ public class Boss extends Enemies{
                 break;
             case ATTACKING:
                 animeTime += dt;
-                //Gdx.app.log("bs: ","ready to attack");
-                //Gdx.app.log("bs: ","isRight: " + isRight);
-                Gdx.app.log("time: ","anime time is: " + animeTime);
+                if(bossHealth <= 0)
+                {
+                    this.currentState = STATE.DEATH;
+                }
+
+                if(hurtCounter >= 5)
+                {
+                    this.currentState = STATE.HURTING;
+                    hurtCounter = 0;
+                }
+
                 if(isRight)
                 {
                     //finish attack back to chasing
@@ -279,26 +299,64 @@ public class Boss extends Enemies{
                         }
                     }
                 }
-                else
-                {
+                else {
                     //finish attack back to chasing
-                    if(attackLeft.isAnimationFinished(animeTime))
-                    {
+                    if (attackLeft.isAnimationFinished(animeTime)) {
                         attackCD = 0;
                         animeTime = 0;
                         this.currentState = STATE.CHASING;
                     }
-                    AttackBound.set(x - 32,y,32,32);
-                    if(player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3)
-                    {
-                        if(!isHitPlayer)
-                        {
-                            Gdx.app.log("attack: ","isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
+                    AttackBound.set(x - 32, y, 32, 32);
+                    if (player.getBoundingBox().overlaps(AttackBound) && animeTime > 1.3) {
+                        if (!isHitPlayer) {
+                            Gdx.app.log("attack: ", "isOverlap: " + player.getBoundingBox().overlaps(AttackBound));
                             player.playerHealth -= 1;
                             isHitPlayer = true;
                         }
                     }
                 }
+                break;
+            case HURTING:
+                hurtTime += dt;
+                if(isRight)
+                {
+                    if(hurtRight.isAnimationFinished(hurtTime))
+                    {
+                        hurtTime = 0;
+                        this.currentState = STATE.CHASING;
+                    }
+                }
+                else
+                {
+                    if(hurtLeft.isAnimationFinished(hurtTime))
+                    {
+                        hurtTime = 0;
+                        this.currentState = STATE.CHASING;
+                    }
+                }
+                break;
+            case DEATH:
+                deathTime += dt;
+                if(isRight)
+                {
+                    if(deathRight.isAnimationFinished(deathTime))
+                    {
+                        deathTime = 0;
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                else
+                {
+                    if(deathLeft.isAnimationFinished(deathTime))
+                    {
+                        hurtTime = 0;
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                break;
+            case REMOVE:
+                dispose();
+                bossBound.set(0,0,0,0);
                 break;
             default:
         }
@@ -346,6 +404,30 @@ public class Boss extends Enemies{
                     batch.draw(currentFrame,this.x - 40,this.y - 32);
                 }
                 break;
+            case HURTING:
+                if(isRight)
+                {
+                    currentFrame = (TextureRegion) (hurtRight.getKeyFrame(hurtTime, true));
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                }
+                else
+                {
+                    currentFrame = (TextureRegion) (hurtLeft.getKeyFrame(hurtTime, true));
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                }
+                break;
+            case DEATH:
+                if(isRight)
+                {
+                    currentFrame = (TextureRegion) (deathRight.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                }
+                else
+                {
+                    currentFrame = (TextureRegion) (deathLeft.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                }
+                break;
             default:
         }
 
@@ -363,6 +445,5 @@ public class Boss extends Enemies{
     }
 
     public void dispose() {
-
     }
 }

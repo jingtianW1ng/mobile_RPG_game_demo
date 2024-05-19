@@ -230,6 +230,7 @@ public class Player {
                         if(AttackBound.overlaps(boss.bossBound))
                         {
                             boss.bossHealth -= 1;
+                            boss.hurtCounter += 1;
                             boss.isHit = attackTime >= 0.2 && attackTime <= 0.65;
                         }
                         attacked = true;
