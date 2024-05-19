@@ -58,6 +58,8 @@ public class Player {
     Rectangle AttackBound;
     boolean isRight;
     float attackTime;
+    boolean attacked;
+    boolean isHit;
 
 
     //player movement delta
@@ -136,6 +138,9 @@ public class Player {
         stayRight = new Texture("Player/Idel_right/IR0.png");
 
         AttackBound = new Rectangle();
+
+        attacked = false;
+        isHit = false;
     }
 
     public void setState(PlayerState state){
@@ -154,8 +159,15 @@ public class Player {
     }
 
 
+    public void update(Array<Flying> flyings, Array<Goblin> goblins, Array<Slime> slimes, Boss boss)
+    {
+        if(state != PlayerState.attacking)
+        {
+            isHit = false;
+            AttackBound.set(0,0,0,0);
+        }
+        Gdx.app.log("checkH","flying heath is: " + flyings.get(0).flyingHealth);
 
-    public void update(){
         float dt = Gdx.graphics.getDeltaTime();
         switch (state)
         {
@@ -172,22 +184,92 @@ public class Player {
                     if(attackRight.isAnimationFinished(attackTime))
                     {
                         attackTime = 0;
+                        attacked = false;
                         state = PlayerState.idleRight;
                     }
-                    //spawn attack bound
-                    AttackBound.set(characterX + 14,characterY + 2,16,16);
-                    //TODO player overlap checker
+
+                    if(attackTime >= 0.2 && !attacked)
+                    {
+                        //spawn attack bound
+                        AttackBound.set(characterX + 14,characterY + 2,16,16);
+                        //TODO player overlap checker
+                        for(int i = 0; i < flyings.size; i++)
+                        {
+                            if(AttackBound.overlaps(flyings.get(i).enemyBound))
+                            {
+                                flyings.get(i).flyingHealth -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        for(int i = 0; i < goblins.size; i++)
+                        {
+                            if(AttackBound.overlaps(goblins.get(i).enemyBound))
+                            {
+                                goblins.get(i).goblinHeath -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        for(int i = 0; i < slimes.size; i++)
+                        {
+                            if(AttackBound.overlaps(slimes.get(i).enemyBound))
+                            {
+                                slimes.get(i).slimeHeath -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        if(AttackBound.overlaps(boss.bossBound))
+                        {
+                            boss.bossHealth -= 1;
+                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                        }
+                        attacked = true;
+                    }
                 }
                 else
                 {
                     if(attackLeft.isAnimationFinished(attackTime))
                     {
                         attackTime = 0;
-                        state = PlayerState.idleRight;
+                        attacked = false;
+                        state = PlayerState.idleLeft;
                     }
-                    //spawn attack bound
-                    AttackBound.set(characterX + 14,characterY + 2,16,16);
                     //TODO player overlap checker
+                    if(attackTime >= 0.2 && !attacked)
+                    {
+                        //spawn attack bound
+                        AttackBound.set(characterX - 14,characterY + 2,16,16);
+                        //TODO player overlap checker
+                        for(int i = 0; i < flyings.size; i++)
+                        {
+                            if(AttackBound.overlaps(flyings.get(i).enemyBound))
+                            {
+                                flyings.get(i).flyingHealth -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        for(int i = 0; i < goblins.size; i++)
+                        {
+                            if(AttackBound.overlaps(goblins.get(i).enemyBound))
+                            {
+                                goblins.get(i).goblinHeath -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        for(int i = 0; i < slimes.size; i++)
+                        {
+                            if(AttackBound.overlaps(slimes.get(i).enemyBound))
+                            {
+                                slimes.get(i).slimeHeath -= 1;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            }
+                        }
+                        if(AttackBound.overlaps(boss.bossBound))
+                        {
+                            boss.bossHealth -= 1;
+                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                        }
+                        attacked = true;
+                    }
                 }
                 break;
         }

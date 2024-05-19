@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 public class Flying extends Enemies{
 
@@ -12,10 +13,12 @@ public class Flying extends Enemies{
     Animation walkRightAni;
     Animation chargeLeft;
     Animation chargeRight;
+    Animation hitEffect;
     Array<TextureRegion> walkLeftFrames = new Array<>();
     Array<TextureRegion> walkRightFrames = new Array<>();
     Array<TextureRegion> chargeLeftFrames = new Array<>();
     Array<TextureRegion> chargeRightFrames = new Array<>();
+    Array<TextureRegion> hitEffectFrames = new Array<>();
     Array<Missile> missiles = new Array<>();
     TextureRegion currentFrame;
     float patrolTime = 2;
@@ -23,6 +26,10 @@ public class Flying extends Enemies{
     float stateTime;
     float flyingSpeed = 30;
     float attackCD;
+    Rectangle enemyBound;
+    float flyingHealth = 2;
+    float hitTime;
+    boolean alreadyHit;
 
     public enum MoveState
     {
@@ -43,6 +50,7 @@ public class Flying extends Enemies{
     float waitCD;
     public Flying(float x, float y)
     {
+        alreadyHit = false;
         this.x = x;
         this.y = y;
         moveState = MoveState.IDLE_RIGHT;
@@ -64,17 +72,26 @@ public class Flying extends Enemies{
         {
             chargeRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/flying_creature/atk_right/atk_R" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
+        }
+
         stateTime = 0.0f;
+        hitTime = 0.0f;
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
         chargeLeft = new Animation(1f, chargeLeftFrames);
         chargeRight = new Animation(1f, chargeRightFrames);
+        //hit effect
+        hitEffect = new Animation(0.19f, hitEffectFrames);
 
         isRight = true;
         isAttacking = false;
         canFire = false;
         missileFired = false;
         attackCD = 4;
+        enemyBound = new Rectangle(x,y,16,16);
     }
 
     public boolean canMove()
@@ -83,6 +100,8 @@ public class Flying extends Enemies{
     }
     public void update(Player player){
         float dt = Gdx.graphics.getDeltaTime();
+        //set bound pos
+        enemyBound.setPosition(x,y );
         Gdx.app.log("state","state is: " + currentState);
         //update missiles
         if(missiles.size != 0)
@@ -219,8 +238,10 @@ public class Flying extends Enemies{
             default:
         }
     }
-    public void render(SpriteBatch batch) {
+    public void render(SpriteBatch batch, Player player) {
         stateTime += Gdx.graphics.getDeltaTime();
+        Gdx.app.log("hit: ","time is: " + player.isHit);
+
         //render missiles
         for(int i = 0; i < missiles.size; i++)
         {
@@ -254,6 +275,18 @@ public class Flying extends Enemies{
                 }
                 break;
             default:
+        }
+
+        //render hit
+        if(player.isHit )
+        {
+            hitTime += Gdx.graphics.getDeltaTime();
+            currentFrame = (TextureRegion)(hitEffect.getKeyFrame(hitTime, true));
+            batch.draw(currentFrame,this.x + 4,this.y + 4);
+        }
+        else
+        {
+            hitTime = 0;
         }
     }
 

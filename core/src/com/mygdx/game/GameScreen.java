@@ -257,7 +257,7 @@ public class GameScreen implements Screen {
         //render each loop enemies
         for(int i = 0; i < flyings.size; i++)
         {
-            flyings.get(i).render(spriteBatch);
+            flyings.get(i).render(spriteBatch, player);
         }
         for(int i = 0; i < goblins.size; i++)
         {
@@ -325,7 +325,7 @@ public class GameScreen implements Screen {
     }
     public void update(){
         //player update
-        player.update();
+        player.update(flyings, goblins, slimes, boss);
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {

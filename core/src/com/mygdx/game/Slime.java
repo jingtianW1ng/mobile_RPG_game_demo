@@ -39,6 +39,8 @@ public class Slime extends Enemies{
     float weakingCD;
     float weakingTime = 3f;
     Rectangle AttackBound;
+    Rectangle enemyBound;
+    float slimeHeath = 2;
     boolean isHit;
 
     float angle;
@@ -83,7 +85,7 @@ public class Slime extends Enemies{
 
         //attack rectangle
         AttackBound = new Rectangle();
-
+        enemyBound = new Rectangle(x,y,16,13);
         angle = 0;
         xDegree = 0;
         yDegree = 0;
@@ -106,6 +108,8 @@ public class Slime extends Enemies{
     }
 
     public void update(Player player){
+        //set bound pos
+        enemyBound.setPosition(x,y);
         updatePrevPos();
         if(this.currentState != STATE.ATTACKING)
         {

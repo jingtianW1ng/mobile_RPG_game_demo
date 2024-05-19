@@ -43,7 +43,9 @@ public class Goblin extends Enemies{
     float attackCD;
     float animeTime;
     Rectangle AttackBound;
+    Rectangle enemyBound;
     boolean isHit;
+    float goblinHeath = 2;
 
     public Goblin(float x, float y)
     {
@@ -96,6 +98,8 @@ public class Goblin extends Enemies{
 
         //attack rectangle
         AttackBound = new Rectangle();
+
+        enemyBound = new Rectangle(x,y,16,16);
     }
 
     public Rectangle getBoundingBox(){
@@ -115,6 +119,9 @@ public class Goblin extends Enemies{
     }
 
     public void update(Player player){
+        //set bound pos
+        enemyBound.setPosition(x,y);
+
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);

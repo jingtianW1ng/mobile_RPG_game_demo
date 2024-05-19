@@ -50,8 +50,10 @@ public class Boss extends Enemies{
     float attackCD;
     float animeTime;
     Rectangle AttackBound;
+    Rectangle bossBound;
     boolean isHit;
     float wakeupTime;
+    float bossHealth = 10;
     public Boss()
     {
         moveState = MoveState.IDLE_RIGHT;
@@ -130,10 +132,13 @@ public class Boss extends Enemies{
 
         //attack rectangle
         AttackBound = new Rectangle();
+
+        bossBound = new Rectangle(x - 41,y - 39,26,28);
     }
 
 
     public void update(Player player){
+        bossBound.setPosition(x - 41,y - 39);
         Gdx.app.log("posb: ", "state is: " +currentState);
 
         if(this.currentState != STATE.ATTACKING)
