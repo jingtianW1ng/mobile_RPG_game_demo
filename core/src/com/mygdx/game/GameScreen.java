@@ -407,42 +407,7 @@ public class GameScreen implements Screen {
                     MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
                     TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
 
-                    //TODO Determine bounds to check within
-                    // Find top-right corner tile
-                    int right = (int) Math.ceil(Math.max(player.characterX + player.playerSprite.getWidth(),player.characterX + player.playerSprite.getWidth() + player.playerDelta.x));
-                    int top = (int) Math.ceil(Math.max(player.characterY + player.playerSprite.getHeight(),player.characterY + player.playerSprite.getHeight() + player.playerDelta.y));
-
-                    // Find bottom-left corner tile
-                    int left = (int) Math.floor(Math.min(player.characterX,player.characterX + player.playerDelta.x));
-                    int bottom = (int) Math.floor(Math.min(player.characterY,player.characterY + player.playerDelta.y));
-
-                    // Divide bounds by tile sizes to retrieve tile indices
-                    right /= tileLayer.getTileWidth();
-                    top /= tileLayer.getTileHeight();
-                    left /= tileLayer.getTileWidth();
-                    bottom /= tileLayer.getTileHeight();
-
-                    //TODO Loop through selected tiles and correct by each axis
-                    //EXTRA: Try counting down if moving left or down instead of counting up
-                    for (int y = bottom; y <= top; y++) {
-                        for (int x = left; x <= right; x++) {
-                            TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
-                            // If the cell is empty, ignore it
-                            if (targetCell == null) continue;
-                            // Otherwise correct against tested squares
-                            tileRectangle.x = x * tileLayer.getTileWidth();
-                            tileRectangle.y = y * tileLayer.getTileHeight();
-
-                            player.playerDeltaRectangle.x = player.characterX + player.playerDelta.x;
-                            player.playerDeltaRectangle.y = player.characterY;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.x = 0;
-
-                            player.playerDeltaRectangle.x = player.characterX;
-                            player.playerDeltaRectangle.y = player.characterY + player.playerDelta.y;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.y = 0;
-
-                        }
-                    }
+                    player.collisionCheck(tileRectangle, tileLayer);
 
                     //TODO Move player and camera
                     player.playerSprite.translate(player.playerDelta.x, player.playerDelta.y);

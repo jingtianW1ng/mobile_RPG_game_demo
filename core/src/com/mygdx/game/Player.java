@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -156,6 +157,45 @@ public class Player {
         state = PlayerState.attacking;
     }
 
+    public void collisionCheck(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        //TODO Determine bounds to check within
+        // Find top-right corner tile
+        int right = (int) Math.ceil(Math.max(characterX + playerSprite.getWidth(),characterX + playerSprite.getWidth() + playerDelta.x));
+        int top = (int) Math.ceil(Math.max(characterY + playerSprite.getHeight(),characterY + playerSprite.getHeight() + playerDelta.y));
+
+        // Find bottom-left corner tile
+        int left = (int) Math.floor(Math.min(characterX,characterX +playerDelta.x));
+        int bottom = (int) Math.floor(Math.min(characterY,characterY + playerDelta.y));
+
+        // Divide bounds by tile sizes to retrieve tile indices
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        //TODO Loop through selected tiles and correct by each axis
+        //EXTRA: Try counting down if moving left or down instead of counting up
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                // If the cell is empty, ignore it
+                if (targetCell == null) continue;
+                // Otherwise correct against tested squares
+                tileRectangle.x = x * tileLayer.getTileWidth();
+                tileRectangle.y = y * tileLayer.getTileHeight();
+
+                playerDeltaRectangle.x = characterX + playerDelta.x;
+                playerDeltaRectangle.y = characterY;
+                if (tileRectangle.overlaps(playerDeltaRectangle)) playerDelta.x = 0;
+
+                playerDeltaRectangle.x = characterX;
+                playerDeltaRectangle.y = characterY + playerDelta.y;
+                if (tileRectangle.overlaps(playerDeltaRectangle)) playerDelta.y = 0;
+
+            }
+        }
+    }
 
     public void update(Array<Flying> flyings, Array<Goblin> goblins, Array<Slime> slimes, Boss boss)
     {
