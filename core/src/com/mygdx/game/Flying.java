@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
@@ -49,6 +51,7 @@ public class Flying extends Enemies{
     float yDegree;
     float waitCD;
     boolean isHit;
+    boolean isCollision;
     public Flying(float x, float y)
     {
         alreadyHit = false;
@@ -83,8 +86,8 @@ public class Flying extends Enemies{
         hitTime = 0.0f;
         walkLeftAni = new Animation(0.25f, walkLeftFrames);
         walkRightAni = new Animation(0.25f, walkRightFrames);
-        chargeLeft = new Animation(1f, chargeLeftFrames);
-        chargeRight = new Animation(1f, chargeRightFrames);
+        chargeLeft = new Animation(0.25f, chargeLeftFrames);
+        chargeRight = new Animation(0.25f, chargeRightFrames);
         //hit effect
         hitEffect = new Animation(0.19f, hitEffectFrames);
 
@@ -96,6 +99,36 @@ public class Flying extends Enemies{
         enemyBound = new Rectangle(x,y,16,16);
     }
 
+    public void collisionCheck(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+
+        // Find bottom-left corner tile
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        // Divide bounds by tile sizes to retrieve tile indices
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        //TODO Loop through selected tiles and correct by each axis
+        //EXTRA: Try counting down if moving left or down instead of counting up
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                // If the cell is empty, ignore it
+                if (targetCell == null) continue;
+                // correct against tested squares
+                tileRectangle.x = x * tileLayer.getTileWidth();
+                tileRectangle.y = y * tileLayer.getTileHeight();
+                //check if enemy overlap with tilemap
+                isCollision = tileRectangle.overlaps(enemyBound);
+            }
+        }
+    }
     public boolean canMove()
     {
         return moveCD >= patrolTime;
@@ -104,7 +137,6 @@ public class Flying extends Enemies{
         float dt = Gdx.graphics.getDeltaTime();
         //set bound pos
         enemyBound.setPosition(x,y );
-        Gdx.app.log("state","state is: " + currentState);
         //update missiles
         if(missiles.size != 0)
         {

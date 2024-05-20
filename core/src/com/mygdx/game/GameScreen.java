@@ -177,7 +177,7 @@ public class GameScreen implements Screen {
         spawnFlying(1400,120);
 
         //goblins
-        spawnGoblin(1400, 140);
+        spawnGoblin(140, 140);
 
         //slimes
         spawnSlime(1400,160);
@@ -217,7 +217,7 @@ public class GameScreen implements Screen {
         player.characterY = 120;
 
         //boss location
-        boss.x = 190;
+        boss.x = 1900;
         boss.y = 120;
 
         camera.translate(player.characterX, player.characterY);
@@ -326,6 +326,7 @@ public class GameScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {
@@ -414,6 +415,30 @@ public class GameScreen implements Screen {
                     player.characterX += player.playerDelta.x;
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
+                }
+                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0)
+                {
+                    //Retrieve Collision layer
+                    MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
+                    TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
+
+                    for(int i = 0; i < flyings.size; i++)
+                    {
+                        flyings.get(i).collisionCheck(tileRectangle, tileLayer);
+
+                    }
+                    for(int i = 0; i < goblins.size; i++)
+                    {
+                        goblins.get(i).collisionCheck(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                    }
+                    for(int i = 0; i < slimes.size; i++)
+                    {
+                        //slimes.get(i).update(this.player);
+                    }
                 }
 
 

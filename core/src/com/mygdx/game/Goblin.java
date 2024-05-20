@@ -3,6 +3,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
@@ -46,6 +47,11 @@ public class Goblin extends Enemies{
     boolean isHitPlayer;
     boolean isHit;
     float goblinHeath = 2;
+    boolean isCollision;
+    boolean isCollisionLeft;
+    boolean isCollisionRight;
+    boolean isCollisionBottom;
+    boolean isCollisionTop;
 
     public Goblin(float x, float y)
     {
@@ -127,6 +133,7 @@ public class Goblin extends Enemies{
     }
 
     public void update(Player player){
+        Gdx.app.log("col","collision is: " + isCollision);
         //set bound pos
         enemyBound.setPosition(x,y);
 
@@ -198,81 +205,117 @@ public class Goblin extends Enemies{
                 }
                 else
                 {
-                    //try to move near the player
-                    if(distanceFrom(player) < 20)
-                    {
-                        Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
-                        Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
-                        //only if player y == enemy y
-                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
-                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
-                        {
-                            //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
-                            if (this.getPosition().x < player.getPosition().x) {
-                                if (distanceFrom(player) <= 17) {
-                                    this.x -= enemySpeed * dt;
-                                    moveState = MoveState.RUN_LEFT;
-                                    isRight = false;
-                                    attackCD = 0;
-                                } else {
-                                    moveState = MoveState.IDLE_RIGHT;
-                                    isRight = true;
-                                    //attack goes here
-                                    attackCD += dt;
-                                    if(attackCD >= attackFrequency)
-                                    {
-                                        this.currentState = STATE.ATTACKING;
-                                    }
-                                }
+                    if (isCollision) {
+                        // Determine player's position relative to the enemy
+                        boolean playerIsRight = player.getPosition().x > this.getPosition().x;
+                        boolean playerIsAbove = player.getPosition().y > this.getPosition().y;
+
+                        // Try to move in the direction where there's no collision
+                        if (playerIsRight) {
+                            // If player is to the right, try to move left if there's no collision
+                            if (!isCollisionLeft) {
+                                this.x -= enemySpeed * dt;
+                                moveState = MoveState.RUN_LEFT;
                             }
-                            else
+                        } else {
+                            // If player is to the left, try to move right if there's no collision
+                            if (!isCollisionRight) {
+                                this.x += enemySpeed * dt;
+                                moveState = MoveState.RUN_RIGHT;
+                            }
+                        }
+
+                        if (playerIsAbove) {
+                            // If player is above, try to move down if there's no collision
+                            if (!isCollisionBottom) {
+                                this.y -= enemySpeed * dt;
+                            }
+                        } else {
+                            // If player is below, try to move up if there's no collision
+                            if (!isCollisionTop) {
+                                this.y += enemySpeed * dt;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //try to move near the player
+                        if(distanceFrom(player) < 20)
+                        {
+                            Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
+                            Gdx.app.log("cogo: ", "collison right: " + isCollisionRight);
+                            //only if player y == enemy y
+                            if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                    && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
                             {
-                                Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
-                                if(distanceFrom(player) <= 17)
-                                {
-                                    this.x += enemySpeed * dt;
-                                    moveState = MoveState.RUN_RIGHT;
-                                    isRight = true;
-                                    attackCD = 0;
+                                //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
+                                if (this.getPosition().x < player.getPosition().x) {
+                                    if (distanceFrom(player) <= 17) {
+                                        this.x -= enemySpeed * dt;
+                                        moveState = MoveState.RUN_LEFT;
+                                        isRight = false;
+                                        attackCD = 0;
+                                    } else {
+                                        moveState = MoveState.IDLE_RIGHT;
+                                        isRight = true;
+                                        //attack goes here
+                                        attackCD += dt;
+                                        if(attackCD >= attackFrequency)
+                                        {
+                                            this.currentState = STATE.ATTACKING;
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    moveState = MoveState.IDLE_LEFT;
-                                    isRight = false;
-                                    //attack goes here
-                                    attackCD += dt;
-                                    if(attackCD >= attackFrequency)
+                                    Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
+                                    if(distanceFrom(player) <= 17)
                                     {
-                                        this.currentState = STATE.ATTACKING;
+                                        this.x += enemySpeed * dt;
+                                        moveState = MoveState.RUN_RIGHT;
+                                        isRight = true;
+                                        attackCD = 0;
+                                    }
+                                    else
+                                    {
+                                        moveState = MoveState.IDLE_LEFT;
+                                        isRight = false;
+                                        //attack goes here
+                                        attackCD += dt;
+                                        if(attackCD >= attackFrequency)
+                                        {
+                                            this.currentState = STATE.ATTACKING;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    else {
-                        if (this.getPosition().x < player.getPosition().x)
-                        {
-                            this.x += enemySpeed * dt;
-                            moveState = MoveState.RUN_RIGHT;
-                            isRight = true;
-                            attackCD = 0;
+                        else {
+                            if (this.getPosition().x < player.getPosition().x)
+                            {
+                                this.x += enemySpeed * dt;
+                                moveState = MoveState.RUN_RIGHT;
+                                isRight = true;
+                                attackCD = 0;
+                            }
+                            if (this.getPosition().x > player.getPosition().x)
+                            {
+                                this.x -= enemySpeed * dt;
+                                moveState = MoveState.RUN_LEFT;
+                                isRight = false;
+                                attackCD = 0;
+                            }
                         }
-                        if (this.getPosition().x > player.getPosition().x)
+                        if (this.getPosition().y < player.getPosition().y)
                         {
-                            this.x -= enemySpeed * dt;
-                            moveState = MoveState.RUN_LEFT;
-                            isRight = false;
-                            attackCD = 0;
+                            this.y += enemySpeed * dt;
+                        }
+                        if (this.getPosition().y > player.getPosition().y)
+                        {
+                            this.y -= enemySpeed * dt;
                         }
                     }
-                    if (this.getPosition().y < player.getPosition().y)
-                    {
-                        this.y += enemySpeed * dt;
-                    }
-                    if (this.getPosition().y > player.getPosition().y)
-                    {
-                        this.y -= enemySpeed * dt;
-                    }
+
                     //Gdx.app.log("bs: ","left distance: "  + distanceFrom(player));
                     //back potral goes here
                     Gdx.app.log("at: ","can attack: " + canAttack);
@@ -407,4 +450,138 @@ public class Goblin extends Enemies{
     public void dispose() {
 
     }
+
+    public void collisionCheck(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        isCollision = false;
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+
+        // Find bottom-left corner tile
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        // Divide bounds by tile sizes to retrieve tile indices
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        //TODO Loop through selected tiles and correct by each axis
+        //EXTRA: Try counting down if moving left or down instead of counting up
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                // If the cell is empty, ignore it
+                if (targetCell == null) continue;
+                // correct against tested squares
+                tileRectangle.x = x * tileLayer.getTileWidth();
+                tileRectangle.y = y * tileLayer.getTileHeight();
+                //check if enemy overlap with tilemap
+                isCollision = tileRectangle.overlaps(enemyBound);
+            }
+        }
+    }
+
+    public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionLeft = false;
+        // Create a rectangle representing the left side of the enemy
+        Rectangle leftBound = new Rectangle(x - 1, y, 1, 16);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x) - 1;
+        int bottom = (int) Math.floor(y);
+
+        // Iterate over all tileRectangles in the left side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionLeft = leftBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+    public void collisionCheckRight(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionRight = false;
+        // Create a rectangle representing the right side of the enemy
+        Rectangle rightBound = new Rectangle(x + 16, y, 1, 16);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        // Iterate over all tileRectangles in the right side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionRight = rightBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+
+    public void collisionCheckBottom(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionBottom = false;
+        // Create a rectangle representing the bottom side of the enemy
+        Rectangle bottomBound = new Rectangle(x, y - 1, 16, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        // Iterate over all tileRectangles at the bottom side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionBottom = (bottomBound.overlaps(tileRectangle));
+                }
+            }
+        }
+    }
+
+    public void collisionCheckTop(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        isCollisionTop = false;
+        // Create a rectangle representing the top side of the enemy
+        Rectangle topBound = new Rectangle(x, y + 16, 16, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        // Iterate over all tileRectangles at the top side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionTop = (topBound.overlaps(tileRectangle));
+
+                }
+            }
+        }
+    }
+
 }
