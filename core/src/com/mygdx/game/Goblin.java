@@ -133,7 +133,11 @@ public class Goblin extends Enemies{
     }
 
     public void update(Player player){
-        Gdx.app.log("col","collision is: " + isCollision);
+        Gdx.app.log("cogo: ", "bot: " + isCollisionBottom);
+        Gdx.app.log("cogo: ", "right: " + isCollisionRight);
+        Gdx.app.log("cogo: ", "left: " + isCollisionBottom);
+        Gdx.app.log("cogo: ", "top: " + isCollisionTop);
+
         //set bound pos
         enemyBound.setPosition(x,y);
 
@@ -197,6 +201,7 @@ public class Goblin extends Enemies{
                         this.currentState = STATE.CHASING;
                     }
                 }
+
                 break;
             case CHASING:
                 if(distanceFrom(player) > 70)
@@ -205,45 +210,27 @@ public class Goblin extends Enemies{
                 }
                 else
                 {
-                    if (isCollision) {
-                        // Determine player's position relative to the enemy
-                        boolean playerIsRight = player.getPosition().x > this.getPosition().x;
-                        boolean playerIsAbove = player.getPosition().y > this.getPosition().y;
-
-                        // Try to move in the direction where there's no collision
-                        if (playerIsRight) {
-                            // If player is to the right, try to move left if there's no collision
-                            if (!isCollisionLeft) {
-                                this.x -= enemySpeed * dt;
-                                moveState = MoveState.RUN_LEFT;
-                            }
-                        } else {
-                            // If player is to the left, try to move right if there's no collision
-                            if (!isCollisionRight) {
-                                this.x += enemySpeed * dt;
-                                moveState = MoveState.RUN_RIGHT;
-                            }
-                        }
-
-                        if (playerIsAbove) {
-                            // If player is above, try to move down if there's no collision
-                            if (!isCollisionBottom) {
-                                this.y -= enemySpeed * dt;
-                            }
-                        } else {
-                            // If player is below, try to move up if there's no collision
-                            if (!isCollisionTop) {
-                                this.y += enemySpeed * dt;
-                            }
-                        }
+                    if (isCollisionRight)
+                    {
+                        this.x -= enemySpeed * dt;
+                    }
+                    else if (isCollisionLeft)
+                    {
+                        this.x += enemySpeed * dt;
+                    }
+                    else if (isCollisionTop)
+                    {
+                        this.y -= enemySpeed * dt;
+                    }
+                    else if (isCollisionBottom)
+                    {
+                        this.y += enemySpeed * dt;
                     }
                     else
                     {
                         //try to move near the player
                         if(distanceFrom(player) < 20)
                         {
-                            Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
-                            Gdx.app.log("cogo: ", "collison right: " + isCollisionRight);
                             //only if player y == enemy y
                             if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
                                     && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
@@ -486,13 +473,18 @@ public class Goblin extends Enemies{
     public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionLeft = false;
         // Create a rectangle representing the left side of the enemy
-        Rectangle leftBound = new Rectangle(x - 1, y, 1, 16);
+        Rectangle leftBound = new Rectangle(x - 1, y + 2, 1, 12);
 
         // Define the bounds of the tileRectangle to check
         int right = (int) Math.ceil(x);
         int top = (int) Math.ceil(y + 16);
         int left = (int) Math.floor(x) - 1;
         int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
 
         // Iterate over all tileRectangles in the left side
         for (int y = bottom; y <= top; y++) {
@@ -510,13 +502,18 @@ public class Goblin extends Enemies{
     public void collisionCheckRight(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionRight = false;
         // Create a rectangle representing the right side of the enemy
-        Rectangle rightBound = new Rectangle(x + 16, y, 1, 16);
+        Rectangle rightBound = new Rectangle(x + 16, y + 2, 1, 12);
 
         // Define the bounds of the tileRectangle to check
         int right = (int) Math.ceil(x + 16);
         int top = (int) Math.ceil(y + 16);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
 
         // Iterate over all tileRectangles in the right side
         for (int y = bottom; y <= top; y++) {
@@ -535,13 +532,18 @@ public class Goblin extends Enemies{
     public void collisionCheckBottom(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionBottom = false;
         // Create a rectangle representing the bottom side of the enemy
-        Rectangle bottomBound = new Rectangle(x, y - 1, 16, 1);
+        Rectangle bottomBound = new Rectangle(x + 2, y - 1, 12, 1);
 
         // Define the bounds of the tileRectangle to check
         int right = (int) Math.ceil(x + 16);
         int top = (int) Math.ceil(y + 16);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
 
         // Iterate over all tileRectangles at the bottom side
         for (int y = bottom; y <= top; y++) {
@@ -561,13 +563,18 @@ public class Goblin extends Enemies{
     {
         isCollisionTop = false;
         // Create a rectangle representing the top side of the enemy
-        Rectangle topBound = new Rectangle(x, y + 16, 16, 1);
+        Rectangle topBound = new Rectangle(x + 2, y + 16, 12, 1);
 
         // Define the bounds of the tileRectangle to check
         int right = (int) Math.ceil(x + 16);
         int top = (int) Math.ceil(y + 16);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
 
         // Iterate over all tileRectangles at the top side
         for (int y = bottom; y <= top; y++) {

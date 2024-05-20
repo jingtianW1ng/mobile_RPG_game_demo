@@ -177,7 +177,7 @@ public class GameScreen implements Screen {
         spawnFlying(1400,120);
 
         //goblins
-        spawnGoblin(140, 140);
+        spawnGoblin(190, 110);
 
         //slimes
         spawnSlime(1400,160);
