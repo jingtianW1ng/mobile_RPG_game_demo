@@ -378,8 +378,7 @@ public class LevelTwoScreen implements Screen {
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
-
-                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0)
+                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0 && boss.bossHealth < 0)
                 {
                     //Retrieve Collision layer
                     MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
@@ -410,8 +409,12 @@ public class LevelTwoScreen implements Screen {
                         slimes.get(i).collisionCheckBottom(tileRectangle, tileLayer);
                         slimes.get(i).collisionCheckTop(tileRectangle, tileLayer);
                     }
-                }
 
+                    boss.collisionCheckLeft(tileRectangle, tileLayer);
+                    boss.collisionCheckRight(tileRectangle, tileLayer);
+                    boss.collisionCheckBottom(tileRectangle, tileLayer);
+                    boss.collisionCheckTop(tileRectangle, tileLayer);
+                }
 
 
                 //if player hit items
