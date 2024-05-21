@@ -165,6 +165,16 @@ public class Flying extends Enemies{
             {
                 missiles.get(i).x += missiles.get(i).speed * missiles.get(i).xDegree * dt;
                 missiles.get(i).y += missiles.get(i).speed * missiles.get(i).yDegree * dt;
+
+                //update missile bound
+                missiles.get(i).missileBound.setPosition( missiles.get(i).x, missiles.get(i).y);
+
+                //check overlap
+                if(missiles.get(i).missileBound.overlaps(player.getBoundingBox()))
+                {
+                    player.playerHealth -= 1;
+                    missiles.removeIndex(i);
+                }
             }
         }
 

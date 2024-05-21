@@ -50,6 +50,7 @@ public class Slime extends Enemies{
     Rectangle enemyBound;
     float slimeHeath = 2;
     boolean isHit;
+    boolean boosted;
 
     float angle;
     float xDegree;
@@ -58,6 +59,7 @@ public class Slime extends Enemies{
     public Slime(float x, float y)
     {
         isHit = false;
+        boosted = false;
         this.x = x;
         this.y = y;
         moveState = MoveState.IDLE_RIGHT;
@@ -233,10 +235,19 @@ public class Slime extends Enemies{
                 {
                     this.x += enemySpeed * xDegree * dt * 2;
                     this.y += enemySpeed * yDegree * dt * 2;
+
+                    if(enemyBound.overlaps(player.getBoundingBox()))
+                    {
+                        if(!boosted)
+                        {
+                            player.playerHealth -= 1;
+                            boosted = true;
+                        }}
                 }
                 else
                 {
                     boostingCD = 0;
+                    boosted = false;
                     this.currentState = STATE.WEAKING;
                 }
                 break;
