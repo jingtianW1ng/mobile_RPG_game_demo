@@ -8,6 +8,11 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
 public class Goblin extends Enemies{
+    Animation deathLeft;
+    Animation deathRight;
+    Array<TextureRegion> deathLeftFrames = new Array<>();
+    Array<TextureRegion> deathRightFrames = new Array<>();
+    float deathTime;
     Animation walkLeftAni;
     Animation walkRightAni;
     Animation idleLeftAni;
@@ -90,6 +95,14 @@ public class Goblin extends Enemies{
         {
             hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            deathLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/goblin/death_L/death" + i + ".png"))));
+        }
+        for(int i = 0; i < 3; i++)
+        {
+            deathRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/goblin/death_R/death" + i + ".png"))));
+        }
         stateTime = 0.0f;
         hitTime = 0.0f;
         //enemy move animation
@@ -102,6 +115,10 @@ public class Goblin extends Enemies{
         slashRight = new Animation(0.2f, slashRightFrames);
         //hit effect
         hitEffect = new Animation(0.19f, hitEffectFrames);
+
+        //death
+        deathLeft =  new Animation(0.2f, deathLeftFrames);
+        deathRight = new Animation(0.2f, deathRightFrames);
 
 
         isRight = true;
@@ -135,6 +152,10 @@ public class Goblin extends Enemies{
     }
 
     public void update(Player player){
+        if(goblinHeath <= 0)
+        {
+            this.currentState = STATE.DEATH;
+        }
         Gdx.app.log("cogo: ", "bot: " + isCollisionBottom);
         Gdx.app.log("cogo: ", "right: " + isCollisionRight);
         Gdx.app.log("cogo: ", "left: " + isCollisionBottom);
@@ -429,6 +450,22 @@ public class Goblin extends Enemies{
                     this.currentState = STATE.CHASING;
                 }
                 break;
+            case DEATH:
+                deathTime += dt;
+                if(isRight)
+                {
+                    if(deathRight.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                else {
+                    if(deathLeft.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                break;
             default:
         }
     }
@@ -487,6 +524,18 @@ public class Goblin extends Enemies{
                 {
                     currentFrame = (TextureRegion) (slashLeft.getKeyFrame(animeTime, true));
                     batch.draw(currentFrame, this.x - 20, this.y);
+                }
+                break;
+            case DEATH:
+                if(isRight)
+                {
+                    currentFrame = (TextureRegion) (deathRight.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
+                }
+                else
+                {
+                    currentFrame = (TextureRegion) (deathLeft.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
                 }
                 break;
             default:
