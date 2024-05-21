@@ -416,7 +416,7 @@ public class GameScreen implements Screen {
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
-                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0 && boss.bossHealth < 0)
+                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0 && boss.bossHealth > 0)
                 {
                     //Retrieve Collision layer
                     MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
