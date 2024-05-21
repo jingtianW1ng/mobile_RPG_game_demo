@@ -24,6 +24,7 @@ public class Goblin extends Enemies{
     Array<TextureRegion> hitEffectFrames = new Array<>();
     TextureRegion currentFrame;
     float patrolTime = 2;
+    float forceCD;
     float moveCD;
     float stateTime;
     float enemySpeed = 30;
@@ -52,7 +53,7 @@ public class Goblin extends Enemies{
     boolean isCollisionRight;
     boolean isCollisionBottom;
     boolean isCollisionTop;
-
+    boolean isCollisionWall;
     public Goblin(float x, float y)
     {
         isHit = false;
@@ -114,6 +115,7 @@ public class Goblin extends Enemies{
         AttackBound = new Rectangle();
 
         enemyBound = new Rectangle(x,y,16,16);
+        isCollisionWall = false;
     }
 
     public Rectangle getBoundingBox(){
@@ -137,6 +139,7 @@ public class Goblin extends Enemies{
         Gdx.app.log("cogo: ", "right: " + isCollisionRight);
         Gdx.app.log("cogo: ", "left: " + isCollisionBottom);
         Gdx.app.log("cogo: ", "top: " + isCollisionTop);
+        Gdx.app.log("cogo: ", "walllll: " + isCollisionWall);
 
         //set bound pos
         enemyBound.setPosition(x,y);
@@ -150,6 +153,14 @@ public class Goblin extends Enemies{
         float dt = Gdx.graphics.getDeltaTime();
         switch(this.currentState) {
             case PATROLLING:
+                if(isCollisionRight)
+                {
+                    isRight = false;
+                }
+                if(isCollisionLeft)
+                {
+                    isRight = true;
+                }
                 //version 1
                 moveCD += dt;
                 //Gdx.app.log("sp: ","attack: "  + canAttack(player));
@@ -212,19 +223,55 @@ public class Goblin extends Enemies{
                 {
                     if (isCollisionRight)
                     {
-                        this.x -= enemySpeed * dt;
+                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
+                        {
+                            if (this.getPosition().x > player.getPosition().x) {
+                                if (distanceFrom(player) <= 17) {
+                                    isCollisionWall = true;
+                                    this.currentState = STATE.FORCELEFTwall;
+                                }
+                            }
+                            else
+                            {
+                                isCollisionWall = false;
+                                moveState = MoveState.IDLE_RIGHT;
+                            }
+                        }
+                        if(!isCollisionWall)
+                        {
+                            this.x -= enemySpeed * dt;
+                        }
                     }
                     else if (isCollisionLeft)
                     {
-                        this.x += enemySpeed * dt;
+                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
+                        {
+                            if (this.getPosition().x < player.getPosition().x) {
+                                if (distanceFrom(player) <= 17) {
+                                    isCollisionWall = true;
+                                    this.currentState = STATE.FORCERIGHTwall;
+                                }
+                            }
+                            else
+                            {
+                                isCollisionWall = false;
+                                moveState = MoveState.IDLE_LEFT;
+                            }
+                        }
+                        if(!isCollisionWall)
+                        {
+                            this.x += enemySpeed * dt;
+                        }
                     }
                     else if (isCollisionTop)
                     {
-                        this.y -= enemySpeed * dt;
+                        y -= enemySpeed * dt;
                     }
                     else if (isCollisionBottom)
                     {
-                        this.y += enemySpeed * dt;
+                        y += enemySpeed * dt;
                     }
                     else
                     {
@@ -238,11 +285,14 @@ public class Goblin extends Enemies{
                                 //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
                                 if (this.getPosition().x < player.getPosition().x) {
                                     if (distanceFrom(player) <= 17) {
-                                        this.x -= enemySpeed * dt;
-                                        moveState = MoveState.RUN_LEFT;
-                                        isRight = false;
-                                        attackCD = 0;
-                                    } else {
+
+                                            this.x -= enemySpeed * dt;
+                                            moveState = MoveState.RUN_LEFT;
+                                            isRight = false;
+                                            attackCD = 0;
+
+                                    }
+                                    else {
                                         moveState = MoveState.IDLE_RIGHT;
                                         isRight = true;
                                         //attack goes here
@@ -258,10 +308,12 @@ public class Goblin extends Enemies{
                                     Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
                                     if(distanceFrom(player) <= 17)
                                     {
-                                        this.x += enemySpeed * dt;
-                                        moveState = MoveState.RUN_RIGHT;
-                                        isRight = true;
-                                        attackCD = 0;
+
+                                            this.x += enemySpeed * dt;
+                                            moveState = MoveState.RUN_RIGHT;
+                                            isRight = true;
+                                            attackCD = 0;
+
                                     }
                                     else
                                     {
@@ -356,7 +408,26 @@ public class Goblin extends Enemies{
                     }
                     moveState = MoveState.IDLE_LEFT;
                 }
-
+                break;
+            case FORCELEFTwall:
+                forceCD += dt;
+                moveState = MoveState.RUN_LEFT;
+                x-= enemySpeed * dt;
+                if(forceCD >= 1)
+                {
+                    forceCD = 0;
+                    this.currentState = STATE.CHASING;
+                }
+                break;
+            case FORCERIGHTwall:
+                forceCD += dt;
+                moveState = MoveState.RUN_RIGHT;
+                x+= enemySpeed * dt;
+                if(forceCD >= 1)
+                {
+                    forceCD = 0;
+                    this.currentState = STATE.CHASING;
+                }
                 break;
             default:
         }
@@ -365,7 +436,7 @@ public class Goblin extends Enemies{
         stateTime += Gdx.graphics.getDeltaTime();
         //render
         switch(this.currentState) {
-            case PATROLLING: case CHASING:
+            case PATROLLING: case CHASING: case FORCELEFTwall: case FORCERIGHTwall:
                 //render knife
                 if(isRight)
                 {

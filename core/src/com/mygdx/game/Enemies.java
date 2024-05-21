@@ -16,7 +16,9 @@ public class Enemies {
         WAKEUP,
         HURTING,
         DEATH,
-        REMOVE
+        REMOVE,
+        FORCELEFTwall,
+        FORCERIGHTwall,
     }
     Array<Vector2> xyChecker = new Array<>();
     STATE currentState;
