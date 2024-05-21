@@ -165,10 +165,7 @@ public class Boss extends Enemies{
         Gdx.app.log("dota: ", "right: " + isCollisionRight);
         Gdx.app.log("dota: ", "top: " + isCollisionTop);
         Gdx.app.log("dota: ", "bot: " + isCollisionBottom);
-        if(isCollisionLeft || isCollisionRight)
-        {
-            this.currentState = STATE.REMOVE;
-        }
+
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
@@ -382,7 +379,7 @@ public class Boss extends Enemies{
         switch(this.currentState) {
             case WAKEUP:
                 currentFrame = (TextureRegion)(wakeupLeft.getKeyFrame(wakeupTime, true));
-                batch.draw(currentFrame,this.x - 40,this.y - 32);
+                batch.draw(currentFrame,renderX,renderY);
                 break;
 
             case CHASING:
