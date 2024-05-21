@@ -461,6 +461,7 @@ public class Boss extends Enemies{
 
     public void dispose() {
     }
+
     public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionLeft = false;
         // Create a rectangle representing the left side of the enemy
