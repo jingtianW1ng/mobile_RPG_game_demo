@@ -67,6 +67,8 @@ public class Boss extends Enemies{
     float hitTime;
     float bossHealth = 10;
     float hurtCounter;
+    boolean isCollisionWall;
+    float forceCD;
     public Boss()
     {
         isHit = false;
@@ -156,6 +158,7 @@ public class Boss extends Enemies{
         AttackBound = new Rectangle();
 
         bossBound = new Rectangle(x,y,26,28);
+        isCollisionWall = false;
     }
 
 
@@ -200,79 +203,155 @@ public class Boss extends Enemies{
                     hurtCounter = 0;
                 }
                 //try to move near the player
-                if(distanceFrom(player) < 20)
+                if (isCollisionRight)
                 {
-                    Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
-                    Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
-                    //only if player y == enemy y
                     if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
                             && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
                     {
-                        //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
-                        if (this.getPosition().x < player.getPosition().x) {
+                        if (this.getPosition().x > player.getPosition().x) {
                             if (distanceFrom(player) <= 17) {
-                                this.x -= enemySpeed * dt;
-                                moveState = MoveState.RUN_LEFT;
-                                isRight = false;
-                                attackCD = 0;
-                            } else {
-                                moveState = MoveState.IDLE_RIGHT;
-                                isRight = true;
-                                //attack goes here
-                                attackCD += dt;
-                                if(attackCD >= attackFrequency)
-                                {
-                                    this.currentState = STATE.ATTACKING;
-                                }
+                                isCollisionWall = true;
+                                this.currentState = STATE.FORCELEFTwall;
                             }
                         }
                         else
                         {
-                            Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
-                            if(distanceFrom(player) <= 17)
-                            {
-                                this.x += enemySpeed * dt;
-                                moveState = MoveState.RUN_RIGHT;
-                                isRight = true;
-                                attackCD = 0;
+                            isCollisionWall = false;
+                            moveState = MoveState.IDLE_RIGHT;
+                        }
+                    }
+                    if(!isCollisionWall)
+                    {
+                        this.x -= enemySpeed * dt;
+                    }
+                }
+                else if (isCollisionLeft)
+                {
+                    if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                            && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
+                    {
+                        if (this.getPosition().x < player.getPosition().x) {
+                            if (distanceFrom(player) <= 17) {
+                                isCollisionWall = true;
+                                this.currentState = STATE.FORCERIGHTwall;
+                            }
+                        }
+                        else
+                        {
+                            isCollisionWall = false;
+                            moveState = MoveState.IDLE_LEFT;
+                        }
+                    }
+                    if(!isCollisionWall)
+                    {
+                        this.x += enemySpeed * dt;
+                    }
+                }
+                else if (isCollisionTop)
+                {
+                    y -= enemySpeed * dt;
+                }
+                else if (isCollisionBottom)
+                {
+                    y += enemySpeed * dt;
+                }
+                else
+                {
+                    if(distanceFrom(player) < 20)
+                    {
+                        Gdx.app.log("rs: ", "player y: " + Math.round(player.getPosition().y));
+                        Gdx.app.log("rs: ", "goblin y: " + Math.round(this.y));
+                        //only if player y == enemy y
+                        if(Math.round(this.y) >= Math.round(player.getPosition().y - 1)
+                                && Math.round(this.y) <= Math.round(player.getPosition().y + 1))
+                        {
+                            //Gdx.app.log("bs: ","distance: "  + distanceFrom(player));
+                            if (this.getPosition().x < player.getPosition().x) {
+                                if (distanceFrom(player) <= 17) {
+                                    this.x -= enemySpeed * dt;
+                                    moveState = MoveState.RUN_LEFT;
+                                    isRight = false;
+                                    attackCD = 0;
+                                } else {
+                                    moveState = MoveState.IDLE_RIGHT;
+                                    isRight = true;
+                                    //attack goes here
+                                    attackCD += dt;
+                                    if(attackCD >= attackFrequency)
+                                    {
+                                        this.currentState = STATE.ATTACKING;
+                                    }
+                                }
                             }
                             else
                             {
-                                moveState = MoveState.IDLE_LEFT;
-                                isRight = false;
-                                //attack goes here
-                                attackCD += dt;
-                                if(attackCD >= attackFrequency)
+                                Gdx.app.log("bs: ","here2: "  + distanceFrom(player));
+                                if(distanceFrom(player) <= 17)
                                 {
-                                    this.currentState = STATE.ATTACKING;
+                                    this.x += enemySpeed * dt;
+                                    moveState = MoveState.RUN_RIGHT;
+                                    isRight = true;
+                                    attackCD = 0;
+                                }
+                                else
+                                {
+                                    moveState = MoveState.IDLE_LEFT;
+                                    isRight = false;
+                                    //attack goes here
+                                    attackCD += dt;
+                                    if(attackCD >= attackFrequency)
+                                    {
+                                        this.currentState = STATE.ATTACKING;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                else {
-                    if (this.getPosition().x < player.getPosition().x)
-                    {
-                        this.x += enemySpeed * dt;
-                        moveState = MoveState.RUN_RIGHT;
-                        isRight = true;
-                        attackCD = 0;
+                    else {
+                        if (this.getPosition().x < player.getPosition().x)
+                        {
+                            this.x += enemySpeed * dt;
+                            moveState = MoveState.RUN_RIGHT;
+                            isRight = true;
+                            attackCD = 0;
+                        }
+                        if (this.getPosition().x > player.getPosition().x)
+                        {
+                            this.x -= enemySpeed * dt;
+                            moveState = MoveState.RUN_LEFT;
+                            isRight = false;
+                            attackCD = 0;
+                        }
                     }
-                    if (this.getPosition().x > player.getPosition().x)
+                    if (this.getPosition().y < player.getPosition().y)
                     {
-                        this.x -= enemySpeed * dt;
-                        moveState = MoveState.RUN_LEFT;
-                        isRight = false;
-                        attackCD = 0;
+                        this.y += enemySpeed * dt;
+                    }
+                    if (this.getPosition().y > player.getPosition().y)
+                    {
+                        this.y -= enemySpeed * dt;
                     }
                 }
-                if (this.getPosition().y < player.getPosition().y)
+
+                break;
+            case FORCELEFTwall:
+                forceCD += dt;
+                moveState = MoveState.RUN_LEFT;
+                x-= enemySpeed * dt;
+                if(forceCD >= 1)
                 {
-                    this.y += enemySpeed * dt;
+                    forceCD = 0;
+                    this.currentState = STATE.CHASING;
                 }
-                if (this.getPosition().y > player.getPosition().y)
+                break;
+            case FORCERIGHTwall:
+                forceCD += dt;
+                moveState = MoveState.RUN_RIGHT;
+                x+= enemySpeed * dt;
+                if(forceCD >= 1)
                 {
-                    this.y -= enemySpeed * dt;
+                    forceCD = 0;
+                    this.currentState = STATE.CHASING;
                 }
                 break;
             case ATTACKING:
@@ -382,7 +461,7 @@ public class Boss extends Enemies{
                 batch.draw(currentFrame,renderX,renderY);
                 break;
 
-            case CHASING:
+            case CHASING: case FORCELEFTwall: case FORCERIGHTwall:
                 //use movestate switch render animation
                 switch(moveState)
                 {
@@ -462,11 +541,11 @@ public class Boss extends Enemies{
     public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionLeft = false;
         // Create a rectangle representing the left side of the enemy
-        Rectangle leftBound = new Rectangle(x - 1, y + 2, 1, 12);
+        Rectangle leftBound = new Rectangle(x - 1, y + 2, 1, 28);
 
         // Define the bounds of the tileRectangle to check
         int right = (int) Math.ceil(x);
-        int top = (int) Math.ceil(y + 16);
+        int top = (int) Math.ceil(y + 32);
         int left = (int) Math.floor(x) - 1;
         int bottom = (int) Math.floor(y);
 
@@ -491,11 +570,11 @@ public class Boss extends Enemies{
     public void collisionCheckRight(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionRight = false;
         // Create a rectangle representing the right side of the enemy
-        Rectangle rightBound = new Rectangle(x + 16, y + 2, 1, 12);
+        Rectangle rightBound = new Rectangle(x + 32, y + 2, 1, 28);
 
         // Define the bounds of the tileRectangle to check
-        int right = (int) Math.ceil(x + 16);
-        int top = (int) Math.ceil(y + 16);
+        int right = (int) Math.ceil(x + 32);
+        int top = (int) Math.ceil(y + 32);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
 
@@ -521,11 +600,11 @@ public class Boss extends Enemies{
     public void collisionCheckBottom(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
         isCollisionBottom = false;
         // Create a rectangle representing the bottom side of the enemy
-        Rectangle bottomBound = new Rectangle(x + 2, y - 1, 12, 1);
+        Rectangle bottomBound = new Rectangle(x + 2, y - 1, 28, 1);
 
         // Define the bounds of the tileRectangle to check
-        int right = (int) Math.ceil(x + 16);
-        int top = (int) Math.ceil(y + 16);
+        int right = (int) Math.ceil(x + 32);
+        int top = (int) Math.ceil(y + 32);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
 
@@ -552,11 +631,11 @@ public class Boss extends Enemies{
     {
         isCollisionTop = false;
         // Create a rectangle representing the top side of the enemy
-        Rectangle topBound = new Rectangle(x + 2, y + 16, 12, 1);
+        Rectangle topBound = new Rectangle(x + 2, y + 32, 28, 1);
 
         // Define the bounds of the tileRectangle to check
-        int right = (int) Math.ceil(x + 16);
-        int top = (int) Math.ceil(y + 16);
+        int right = (int) Math.ceil(x + 32);
+        int top = (int) Math.ceil(y + 32);
         int left = (int) Math.floor(x);
         int bottom = (int) Math.floor(y);
 

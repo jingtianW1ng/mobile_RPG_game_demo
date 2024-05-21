@@ -218,7 +218,7 @@ public class GameScreen implements Screen {
 
         //boss location
         boss.x = 200;
-        boss.y = 180;
+        boss.y = 140;
 
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
