@@ -52,6 +52,11 @@ public class Flying extends Enemies{
     float waitCD;
     boolean isHit;
     boolean isCollision;
+    float deathTime;
+    Animation deathLeft;
+    Animation deathRight;
+    Array<TextureRegion> deathLeftFrames = new Array<>();
+    Array<TextureRegion> deathRightFrames = new Array<>();
     public Flying(float x, float y)
     {
         alreadyHit = false;
@@ -81,6 +86,14 @@ public class Flying extends Enemies{
         {
             hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            deathLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/flying_creature/death_L/death" + i + ".png"))));
+        }
+        for(int i = 0; i < 3; i++)
+        {
+            deathRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/flying_creature/death_R/death" + i + ".png"))));
+        }
 
         stateTime = 0.0f;
         hitTime = 0.0f;
@@ -90,6 +103,10 @@ public class Flying extends Enemies{
         chargeRight = new Animation(0.25f, chargeRightFrames);
         //hit effect
         hitEffect = new Animation(0.19f, hitEffectFrames);
+
+        //death
+        deathLeft =  new Animation(0.2f, deathLeftFrames);
+        deathRight = new Animation(0.2f, deathRightFrames);
 
         isRight = true;
         isAttacking = false;
@@ -134,6 +151,10 @@ public class Flying extends Enemies{
         return moveCD >= patrolTime;
     }
     public void update(Player player){
+        if(flyingHealth <= 0)
+        {
+            this.currentState = STATE.DEATH;
+        }
         float dt = Gdx.graphics.getDeltaTime();
         //set bound pos
         enemyBound.setPosition(x,y );
@@ -269,6 +290,25 @@ public class Flying extends Enemies{
                     waitCD = 0;
                 }
                 break;
+            case DEATH:
+                deathTime += dt;
+                if(isRight)
+                {
+                    if(deathRight.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                else {
+                    if(deathLeft.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                break;
+            case REMOVE:
+                enemyBound.set(10000,10000,0,0);
+                break;
             default:
         }
     }
@@ -307,6 +347,18 @@ public class Flying extends Enemies{
                     batch.draw(currentFrame,this.x,this.y);
                 }
                 break;
+            case DEATH:
+                if(isRight)
+                {
+                    currentFrame = (TextureRegion) (deathRight.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
+                }
+                else
+                {
+                    currentFrame = (TextureRegion) (deathLeft.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
+                }
+                break;
             default:
         }
 
@@ -321,6 +373,7 @@ public class Flying extends Enemies{
         {
             hitTime = 0;
         }
+
     }
 
     public void dispose() {

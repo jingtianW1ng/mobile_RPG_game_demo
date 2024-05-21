@@ -466,6 +466,9 @@ public class Goblin extends Enemies{
                     }
                 }
                 break;
+            case REMOVE:
+                enemyBound.set(10000,10000,0,0);
+                break;
             default:
         }
     }

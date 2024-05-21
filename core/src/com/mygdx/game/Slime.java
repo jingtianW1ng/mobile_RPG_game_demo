@@ -24,7 +24,11 @@ public class Slime extends Enemies{
     float moveCD;
     float stateTime;
     float hitTime;
-
+    float deathTime;
+    Animation deathLeft;
+    Animation deathRight;
+    Array<TextureRegion> deathLeftFrames = new Array<>();
+    Array<TextureRegion> deathRightFrames = new Array<>();
     float enemySpeed = 30;
     public enum MoveState
     {
@@ -79,6 +83,14 @@ public class Slime extends Enemies{
         {
             hitEffectFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Effects/hitEffects/hit_effect_anim_f" + i + ".png"))));
         }
+        for(int i = 0; i < 3; i++)
+        {
+            deathLeftFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/slime/death_L/death" + i + ".png"))));
+        }
+        for(int i = 0; i < 3; i++)
+        {
+            deathRightFrames.add(new TextureRegion(new Texture(Gdx.files.internal("Enemies/enemies/slime/death_R/death" + i + ".png"))));
+        }
         stateTime = 0.0f;
         hitTime = 0.0f;
         //enemy move animation
@@ -89,6 +101,10 @@ public class Slime extends Enemies{
         //boosting effect
         boosting_L = new Texture(Gdx.files.internal("Enemies/enemies/slime/idle_left/slime_idle_L5.png"));
         boosting_R = new Texture(Gdx.files.internal("Enemies/enemies/slime/idle_right/slime_idle_R5.png"));;
+
+        //death
+        deathLeft =  new Animation(0.2f, deathLeftFrames);
+        deathRight = new Animation(0.2f, deathRightFrames);
 
         isRight = true;
         isBoosting = false;
@@ -121,6 +137,10 @@ public class Slime extends Enemies{
     }
 
     public void update(Player player){
+        if(slimeHeath <= 0)
+        {
+            this.currentState = STATE.DEATH;
+        }
         //set bound pos
         enemyBound.setPosition(x,y);
         updatePrevPos();
@@ -228,6 +248,25 @@ public class Slime extends Enemies{
                     this.currentState = STATE.PATROLLING;
                 }
                 break;
+            case DEATH:
+                deathTime += dt;
+                if(isRight)
+                {
+                    if(deathRight.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                else {
+                    if(deathLeft.isAnimationFinished(deathTime))
+                    {
+                        this.currentState = STATE.REMOVE;
+                    }
+                }
+                break;
+            case REMOVE:
+                enemyBound.set(10000,10000,0,0);
+                break;
             default:
         }
     }
@@ -277,6 +316,18 @@ public class Slime extends Enemies{
                 {
                     currentFrame = (TextureRegion)(idleLeftAni.getKeyFrame(stateTime, true));
                     batch.draw(currentFrame,this.x,this.y);
+                }
+                break;
+            case DEATH:
+                if(isRight)
+                {
+                    currentFrame = (TextureRegion) (deathRight.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
+                }
+                else
+                {
+                    currentFrame = (TextureRegion) (deathLeft.getKeyFrame(deathTime, true));
+                    batch.draw(currentFrame, this.x, this.y);
                 }
                 break;
             default:

@@ -174,13 +174,13 @@ public class GameScreen implements Screen {
 
         //每个level的要创建的enemies在这里
         //flyings
-        spawnFlying(1400,120);
+        spawnFlying(140,120);
 
         //goblins
-        spawnGoblin(190, 110);
+        spawnGoblin(1900, 110);
 
         //slimes
-        spawnSlime(1400,160);
+        spawnSlime(140,160);
 
         //boss只有一个不用多个生成
         boss = new Boss();
