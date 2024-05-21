@@ -378,6 +378,7 @@ public class LevelTwoScreen implements Screen {
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
+
                 if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0)
                 {
                     //Retrieve Collision layer
@@ -386,12 +387,17 @@ public class LevelTwoScreen implements Screen {
 
                     for(int i = 0; i < flyings.size; i++)
                     {
-                        flyings.get(i).collisionCheck(tileRectangle, tileLayer);
-
+                        flyings.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                        for(int j = 0; j < flyings.get(i).missiles.size; j++)
+                        {
+                            flyings.get(i).missileCollisionCheck(tileRectangle, tileLayer, flyings.get(i).missiles.get(j));
+                        }
                     }
                     for(int i = 0; i < goblins.size; i++)
                     {
-                        goblins.get(i).collisionCheck(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckLeft(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckRight(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckBottom(tileRectangle, tileLayer);
@@ -399,9 +405,13 @@ public class LevelTwoScreen implements Screen {
                     }
                     for(int i = 0; i < slimes.size; i++)
                     {
-                        //slimes.get(i).update(this.player);
+                        slimes.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckTop(tileRectangle, tileLayer);
                     }
                 }
+
 
 
                 //if player hit items

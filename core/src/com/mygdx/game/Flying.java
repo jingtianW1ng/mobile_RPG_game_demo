@@ -10,6 +10,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 public class Flying extends Enemies{
+    boolean isCollisionLeft;
+    boolean isCollisionRight;
+    boolean isCollisionTop;
+    boolean isCollisionBottom;
 
     Animation walkLeftAni;
     Animation walkRightAni;
@@ -166,14 +170,24 @@ public class Flying extends Enemies{
                 missiles.get(i).x += missiles.get(i).speed * missiles.get(i).xDegree * dt;
                 missiles.get(i).y += missiles.get(i).speed * missiles.get(i).yDegree * dt;
 
-                //update missile bound
                 missiles.get(i).missileBound.setPosition( missiles.get(i).x, missiles.get(i).y);
 
-                //check overlap
-                if(missiles.get(i).missileBound.overlaps(player.getBoundingBox()))
+                if(missiles.size != 0)
                 {
-                    player.playerHealth -= 1;
-                    missiles.removeIndex(i);
+                    if(missiles.get(i).isCollision)
+                    {
+                        missiles.removeIndex(i);
+                    }
+                }
+
+                //check overlap player
+                if(missiles.size != 0)
+                {
+                    if(missiles.get(i).missileBound.overlaps(player.getBoundingBox()))
+                    {
+                        player.playerHealth -= 1;
+                        missiles.removeIndex(i);
+                    }
                 }
             }
         }
@@ -181,6 +195,14 @@ public class Flying extends Enemies{
         Gdx.app.log("dt: ","time is: " + canFire);
         switch(this.currentState) {
             case PATROLLING:
+                if(isCollisionRight)
+                {
+                    isRight = false;
+                }
+                if(isCollisionLeft)
+                {
+                    isRight = true;
+                }
                 //version 1
                 moveCD += dt;
                 //Gdx.app.log("sb: ","flying distance: "  + moveCD);
@@ -223,30 +245,47 @@ public class Flying extends Enemies{
                 canFire = false;
                 if (distanceFrom(player) > 70) {
                     this.currentState = STATE.PATROLLING;
-                } else {
-                    //try to move near the player
-                    if (distanceFrom(player) < 40) {
-                        if (this.getPosition().x < player.getPosition().x) {
-                            isRight = true;
-                        }
-                        if (this.getPosition().x > player.getPosition().x) {
-                            isRight = false;
-                        }
-                        //state change to attacking
-                        attackCD += dt;
-                        if(attackCD >= 4)
-                        {
-                            attackCD = 0;
-                            this.currentState = STATE.ATTACKING;
-                        }
+                }
+                else {
+                    if (isCollisionRight)
+                    {
+                        x -= flyingSpeed * dt;
+                    }
+                    else if (isCollisionLeft)
+                    {
+                        x += flyingSpeed * dt;
+                    }
+                    else if (isCollisionTop)
+                    {
+                        y -= flyingSpeed * dt;
+                    }
+                    else if (isCollisionBottom)
+                    {
+                        y += flyingSpeed * dt;
                     }
                     else
                     {
-                        angle = getAngle(player.getPosition());
-                        xDegree = MathUtils.cosDeg(angle);
-                        yDegree = MathUtils.sinDeg(angle);
-                        x += flyingSpeed * xDegree * dt;
-                        y += flyingSpeed * yDegree * dt;
+                        //try to move near the player
+                        if (distanceFrom(player) < 40) {
+                            if (this.getPosition().x < player.getPosition().x) {
+                                isRight = true;
+                            }
+                            if (this.getPosition().x > player.getPosition().x) {
+                                isRight = false;
+                            }
+                            //state change to attacking
+                            attackCD += dt;
+                            if (attackCD >= 4) {
+                                attackCD = 0;
+                                this.currentState = STATE.ATTACKING;
+                            }
+                        } else {
+                            angle = getAngle(player.getPosition());
+                            xDegree = MathUtils.cosDeg(angle);
+                            yDegree = MathUtils.sinDeg(angle);
+                            x += flyingSpeed * xDegree * dt;
+                            y += flyingSpeed * yDegree * dt;
+                        }
                     }
                 }
                 break;
@@ -388,6 +427,159 @@ public class Flying extends Enemies{
 
     public void dispose() {
 
+    }
+
+
+    public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionLeft = false;
+        // Create a rectangle representing the left side of the enemy
+        Rectangle leftBound = new Rectangle(x - 1, y + 2, 1, 12);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x) - 1;
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles in the left side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionLeft = leftBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+    public void collisionCheckRight(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionRight = false;
+        // Create a rectangle representing the right side of the enemy
+        Rectangle rightBound = new Rectangle(x + 16, y + 2, 1, 12);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles in the right side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionRight = rightBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+
+    public void collisionCheckBottom(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionBottom = false;
+        // Create a rectangle representing the bottom side of the enemy
+        Rectangle bottomBound = new Rectangle(x + 2, y - 1, 12, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles at the bottom side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionBottom = (bottomBound.overlaps(tileRectangle));
+                }
+            }
+        }
+    }
+
+    public void collisionCheckTop(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        isCollisionTop = false;
+        // Create a rectangle representing the top side of the enemy
+        Rectangle topBound = new Rectangle(x + 2, y + 16, 12, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles at the top side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionTop = (topBound.overlaps(tileRectangle));
+                }
+            }
+        }
+    }
+
+    public void missileCollisionCheck(Rectangle tileRectangle, TiledMapTileLayer tileLayer, Missile missile)
+    {
+        missile.isCollision = false;
+        int right = (int) Math.ceil(missile.x + 16);
+        int top = (int) Math.ceil(missile.y + 16);
+
+        // Find bottom-left corner tile
+        int left = (int) Math.floor(missile.x);
+        int bottom = (int) Math.floor(missile.y);
+
+        // Divide bounds by tile sizes to retrieve tile indices
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        //TODO Loop through selected tiles and correct by each axis
+        //EXTRA: Try counting down if moving left or down instead of counting up
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                // If the cell is empty, ignore it
+                if (targetCell == null) continue;
+                // correct against tested squares
+                tileRectangle.x = x * tileLayer.getTileWidth();
+                tileRectangle.y = y * tileLayer.getTileHeight();
+                //check if enemy overlap with tilemap
+                missile.isCollision = tileRectangle.overlaps(missile.missileBound);
+            }
+        }
     }
 }
 

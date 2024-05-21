@@ -174,13 +174,13 @@ public class GameScreen implements Screen {
 
         //每个level的要创建的enemies在这里
         //flyings
-        spawnFlying(140,120);
+        spawnFlying(250,90);
 
         //goblins
         spawnGoblin(1900, 110);
 
         //slimes
-        spawnSlime(140,160);
+        spawnSlime(250,90);
 
         //boss只有一个不用多个生成
         boss = new Boss();
@@ -217,7 +217,7 @@ public class GameScreen implements Screen {
         player.characterY = 120;
 
         //boss location
-        boss.x = 1900;
+        boss.x = 0;
         boss.y = 120;
 
         camera.translate(player.characterX, player.characterY);
@@ -416,7 +416,7 @@ public class GameScreen implements Screen {
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
                 }
-                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0)
+                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0 && boss.bossHealth < 0)
                 {
                     //Retrieve Collision layer
                     MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
@@ -424,12 +424,17 @@ public class GameScreen implements Screen {
 
                     for(int i = 0; i < flyings.size; i++)
                     {
-                        flyings.get(i).collisionCheck(tileRectangle, tileLayer);
-
+                        flyings.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                        for(int j = 0; j < flyings.get(i).missiles.size; j++)
+                        {
+                            flyings.get(i).missileCollisionCheck(tileRectangle, tileLayer, flyings.get(i).missiles.get(j));
+                        }
                     }
                     for(int i = 0; i < goblins.size; i++)
                     {
-                        goblins.get(i).collisionCheck(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckLeft(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckRight(tileRectangle, tileLayer);
                         goblins.get(i).collisionCheckBottom(tileRectangle, tileLayer);
@@ -437,8 +442,16 @@ public class GameScreen implements Screen {
                     }
                     for(int i = 0; i < slimes.size; i++)
                     {
-                        //slimes.get(i).update(this.player);
+                        slimes.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckTop(tileRectangle, tileLayer);
                     }
+
+                    boss.collisionCheckLeft(tileRectangle, tileLayer);
+                    boss.collisionCheckRight(tileRectangle, tileLayer);
+                    boss.collisionCheckBottom(tileRectangle, tileLayer);
+                    boss.collisionCheckTop(tileRectangle, tileLayer);
                 }
 
 

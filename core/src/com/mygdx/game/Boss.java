@@ -3,10 +3,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
 public class Boss extends Enemies{
+    boolean isCollisionLeft;
+    boolean isCollisionRight;
+    boolean isCollisionTop;
+    boolean isCollisionBottom;
     Animation walkLeftAni;
     Animation walkRightAni;
     Animation idleLeftAni;
@@ -39,6 +44,8 @@ public class Boss extends Enemies{
     float stateTime;
     float enemySpeed = 30;
     boolean isWeak = false;
+    float renderX;
+    float renderY;
     public enum MoveState
     {
         IDLE_LEFT,
@@ -154,8 +161,14 @@ public class Boss extends Enemies{
 
     public void update(Player player){
         bossBound.setPosition(x,y);
-        Gdx.app.log("posb: ", "state is: " + player.getBoundingBox().overlaps(bossBound));
-
+        Gdx.app.log("dota: ", "left: " + isCollisionLeft);
+        Gdx.app.log("dota: ", "right: " + isCollisionRight);
+        Gdx.app.log("dota: ", "top: " + isCollisionTop);
+        Gdx.app.log("dota: ", "bot: " + isCollisionBottom);
+        if(isCollisionLeft || isCollisionRight)
+        {
+            this.currentState = STATE.REMOVE;
+        }
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
@@ -363,6 +376,8 @@ public class Boss extends Enemies{
     }
     public void render(SpriteBatch batch) {
         stateTime += Gdx.graphics.getDeltaTime();
+        renderX = this.x - 40;
+        renderY = this.y - 32;
         //render
         switch(this.currentState) {
             case WAKEUP:
@@ -376,19 +391,19 @@ public class Boss extends Enemies{
                 {
                     case RUN_LEFT:
                         currentFrame = (TextureRegion)(walkLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x - 40,this.y - 32);
+                        batch.draw(currentFrame,renderX,renderY);
                         break;
                     case RUN_RIGHT:
                         currentFrame = (TextureRegion)(walkRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x - 40,this.y - 32);
+                        batch.draw(currentFrame,renderX,renderY);
                         break;
                     case IDLE_LEFT:
                         currentFrame = (TextureRegion)(idleLeftAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x - 40,this.y - 32);
+                        batch.draw(currentFrame,renderX,renderY);
                         break;
                     case IDLE_RIGHT:
                         currentFrame = (TextureRegion)(idleRightAni.getKeyFrame(stateTime, true));
-                        batch.draw(currentFrame,this.x - 40,this.y - 32);
+                        batch.draw(currentFrame,renderX,renderY);
                         break;
                 }
                 break;
@@ -396,36 +411,36 @@ public class Boss extends Enemies{
                 if(isRight)
                 {
                     currentFrame = (TextureRegion) (attackRight.getKeyFrame(animeTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 else
                 {
                     currentFrame = (TextureRegion) (attackLeft.getKeyFrame(animeTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 break;
             case HURTING:
                 if(isRight)
                 {
                     currentFrame = (TextureRegion) (hurtRight.getKeyFrame(hurtTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 else
                 {
                     currentFrame = (TextureRegion) (hurtLeft.getKeyFrame(hurtTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 break;
             case DEATH:
                 if(isRight)
                 {
                     currentFrame = (TextureRegion) (deathRight.getKeyFrame(deathTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 else
                 {
                     currentFrame = (TextureRegion) (deathLeft.getKeyFrame(deathTime, true));
-                    batch.draw(currentFrame,this.x - 40,this.y - 32);
+                    batch.draw(currentFrame,renderX,renderY);
                 }
                 break;
             default:
@@ -445,5 +460,124 @@ public class Boss extends Enemies{
     }
 
     public void dispose() {
+    }
+    public void collisionCheckLeft(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionLeft = false;
+        // Create a rectangle representing the left side of the enemy
+        Rectangle leftBound = new Rectangle(x - 1, y + 2, 1, 12);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x) - 1;
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles in the left side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionLeft = leftBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+    public void collisionCheckRight(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionRight = false;
+        // Create a rectangle representing the right side of the enemy
+        Rectangle rightBound = new Rectangle(x + 16, y + 2, 1, 12);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles in the right side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionRight = rightBound.overlaps(tileRectangle);
+                }
+            }
+        }
+    }
+
+    public void collisionCheckBottom(Rectangle tileRectangle, TiledMapTileLayer tileLayer) {
+        isCollisionBottom = false;
+        // Create a rectangle representing the bottom side of the enemy
+        Rectangle bottomBound = new Rectangle(x + 2, y - 1, 12, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles at the bottom side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionBottom = (bottomBound.overlaps(tileRectangle));
+                }
+            }
+        }
+    }
+
+    public void collisionCheckTop(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
+    {
+        isCollisionTop = false;
+        // Create a rectangle representing the top side of the enemy
+        Rectangle topBound = new Rectangle(x + 2, y + 16, 12, 1);
+
+        // Define the bounds of the tileRectangle to check
+        int right = (int) Math.ceil(x + 16);
+        int top = (int) Math.ceil(y + 16);
+        int left = (int) Math.floor(x);
+        int bottom = (int) Math.floor(y);
+
+        right /= tileLayer.getTileWidth();
+        top /= tileLayer.getTileHeight();
+        left /= tileLayer.getTileWidth();
+        bottom /= tileLayer.getTileHeight();
+
+        // Iterate over all tileRectangles at the top side
+        for (int y = bottom; y <= top; y++) {
+            for (int x = left; x <= right; x++) {
+                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
+                if (targetCell != null) {
+                    // Calculate the position of the tileRectangle
+                    tileRectangle.x = x * tileLayer.getTileWidth();
+                    tileRectangle.y = y * tileLayer.getTileHeight();
+                    isCollisionTop = (topBound.overlaps(tileRectangle));
+                }
+            }
+        }
     }
 }

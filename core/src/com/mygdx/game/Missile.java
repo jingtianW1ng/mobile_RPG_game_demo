@@ -18,6 +18,7 @@ public class Missile {
     float y;
     float speed;
     Rectangle missileBound;
+    boolean isCollision;
     public Missile()
     {
         missile = new Texture(Gdx.files.internal("Enemies/enemies/flying_creature/missile.png"));
