@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
@@ -9,12 +10,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -72,7 +75,9 @@ public class LevelTwoScreen implements Screen {
     Button pauseButton;
     Button resumeButton;
     Button exitToMainMenuButton;
-    Button lvlTwoButton;
+
+    Button bossLevelButton;
+
     boolean isResumeButtonDown = false;
     boolean isExitButtonDown = false;
     boolean isPauseButtonDown = false;
@@ -80,6 +85,14 @@ public class LevelTwoScreen implements Screen {
 
     //Sound
     Sound buttonClickSound;
+    Music backgroundMusic;
+
+    //Gate
+    Texture gateTexture;
+    Sprite gateSprite;
+    Vector2 gatePosition;
+    Rectangle gateRect;
+
 
     //Storage class for collision
     Rectangle tileRectangle;
@@ -93,6 +106,13 @@ public class LevelTwoScreen implements Screen {
 
     Texture bosstex;
     Texture goblinTex;
+
+
+    //Overhead Layer Opacity
+    Rectangle opacityTrigger = new Rectangle();
+    float overheadOpacity = 1f;
+
+
     public LevelTwoScreen(MyGdxGame game) {this.game = game;}
     public void create() {
 
@@ -101,7 +121,8 @@ public class LevelTwoScreen implements Screen {
         uiBatch = new SpriteBatch();
 
         //TODO Initiate the TiledMap and its renderer
-        tiledMap = new TmxMapLoader().load("Background/levelTwoMap.tmx");
+        tiledMap = new TmxMapLoader().load("Background/levelTwo.tmx");
+//        tiledMapRenderer = new LayerRender(tiledMap);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         //Camera
@@ -132,6 +153,12 @@ public class LevelTwoScreen implements Screen {
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
+        //Gate
+        gateTexture = new Texture(("Background/tiles/wall/door_closed.png"));
+        gateSprite = new Sprite(gateTexture);
+        gatePosition = new Vector2(1480, 200);
+        gateRect = new Rectangle(gatePosition.x, gatePosition.y, gateSprite.getWidth(), gateSprite.getHeight());
+
         //player attack button
         float screenWidth = Gdx.graphics.getWidth() - buttonSize;
         attackButton = new Button("",screenWidth, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -141,8 +168,15 @@ public class LevelTwoScreen implements Screen {
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
 
+        bossLevelButton = new Button("final step to win the game", 600,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
+
+
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("levelTwo.wav"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.play();
 
         //Collision
         tileRectangle = new Rectangle();
@@ -203,6 +237,11 @@ public class LevelTwoScreen implements Screen {
         boss.x = 190;
         boss.y = 120;
 
+//        MapLayer objectLayer = tiledMap.getLayers().get("Objects");
+//
+//        RectangleMapObject opacityObject = (RectangleMapObject)objectLayer.getObjects().get("Fadeout");
+//        opacityTrigger.set(opacityObject.getRectangle());
+
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
     }
@@ -225,6 +264,8 @@ public class LevelTwoScreen implements Screen {
         //TODO Render Map Here
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
+
+
 
         //Draw Character
         //Apply the camera's transform to the SpriteBatch so the character is drawn in the correct
@@ -256,6 +297,8 @@ public class LevelTwoScreen implements Screen {
         spriteBatch.end();
 
 
+
+
         //Draw UI
         uiBatch.begin();
         switch(gameState) {
@@ -269,7 +312,6 @@ public class LevelTwoScreen implements Screen {
 
                 //player attack
                 attackButton.draw(uiBatch);
-
                 break;
             //if gameState is Paused: Draw buttons
             case PAUSED:
@@ -281,7 +323,7 @@ public class LevelTwoScreen implements Screen {
                 restartButton.draw(uiBatch);
                 break;
             case COMPLETE:
-                lvlTwoButton.draw(uiBatch);
+                bossLevelButton.draw(uiBatch);
                 break;
         }
         uiBatch.end();
@@ -432,7 +474,13 @@ public class LevelTwoScreen implements Screen {
 
 
                 //TODO Check if player has met the winning condition
-                break;
+                if (player.getBoundingBox().overlaps(gateRect)) {
+                    gameState = GameState.COMPLETE;
+
+                }
+
+
+
 
             case PAUSED:
                 resumeButton.update(checkTouch, touchX, touchY);
@@ -462,6 +510,11 @@ public class LevelTwoScreen implements Screen {
                 break;
 
             case COMPLETE:
+                bossLevelButton.update(checkTouch, touchX, touchY);
+                if (Gdx.input.isKeyPressed(Input.Keys.UP) || bossLevelButton.isDown) {
+                    backgroundMusic.stop();
+                    game.setScreen(MyGdxGame.bossScreen);
+                }
                 break;
         }
     }
