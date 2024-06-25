@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -60,6 +59,7 @@ public class Player {
     boolean isRight;
     float attackTime;
     boolean attacked;
+    boolean isHit;
 
 
     //player movement delta
@@ -140,6 +140,7 @@ public class Player {
         AttackBound = new Rectangle();
 
         attacked = false;
+        isHit = false;
     }
 
     public void setState(PlayerState state){
@@ -157,66 +158,15 @@ public class Player {
         state = PlayerState.attacking;
     }
 
-    public void collisionCheck(Rectangle tileRectangle, TiledMapTileLayer tileLayer)
-    {
-        //TODO Determine bounds to check within
-        // Find top-right corner tile
-        int right = (int) Math.ceil(Math.max(characterX + playerSprite.getWidth(),characterX + playerSprite.getWidth() + playerDelta.x));
-        int top = (int) Math.ceil(Math.max(characterY + playerSprite.getHeight(),characterY + playerSprite.getHeight() + playerDelta.y));
-
-        // Find bottom-left corner tile
-        int left = (int) Math.floor(Math.min(characterX,characterX +playerDelta.x));
-        int bottom = (int) Math.floor(Math.min(characterY,characterY + playerDelta.y));
-
-        // Divide bounds by tile sizes to retrieve tile indices
-        right /= tileLayer.getTileWidth();
-        top /= tileLayer.getTileHeight();
-        left /= tileLayer.getTileWidth();
-        bottom /= tileLayer.getTileHeight();
-
-        //TODO Loop through selected tiles and correct by each axis
-        //EXTRA: Try counting down if moving left or down instead of counting up
-        for (int y = bottom; y <= top; y++) {
-            for (int x = left; x <= right; x++) {
-                TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
-                // If the cell is empty, ignore it
-                if (targetCell == null) continue;
-                // Otherwise correct against tested squares
-                tileRectangle.x = x * tileLayer.getTileWidth();
-                tileRectangle.y = y * tileLayer.getTileHeight();
-
-                playerDeltaRectangle.x = characterX + playerDelta.x;
-                playerDeltaRectangle.y = characterY;
-                if (tileRectangle.overlaps(playerDeltaRectangle)) playerDelta.x = 0;
-
-                playerDeltaRectangle.x = characterX;
-                playerDeltaRectangle.y = characterY + playerDelta.y;
-                if (tileRectangle.overlaps(playerDeltaRectangle)) playerDelta.y = 0;
-
-            }
-        }
-    }
 
     public void update(Array<Flying> flyings, Array<Goblin> goblins, Array<Slime> slimes, Boss boss)
     {
         if(state != PlayerState.attacking)
         {
+            isHit = false;
             AttackBound.set(0,0,0,0);
-            for(int i = 0; i < flyings.size; i++)
-            {
-                flyings.get(i).isHit = false;
-            }
-            for(int i = 0; i < goblins.size; i++)
-            {
-                goblins.get(i).isHit = false;
-            }
-            for(int i = 0; i < slimes.size; i++)
-            {
-                slimes.get(i).isHit = false;
-            }
-            boss.isHit = false;
         }
-        Gdx.app.log("checkH","flying heath is: " + boss.bossHealth);
+        Gdx.app.log("checkH","flying heath is: " + flyings.get(0).flyingHealth);
 
         float dt = Gdx.graphics.getDeltaTime();
         switch (state)
@@ -248,7 +198,7 @@ public class Player {
                             if(AttackBound.overlaps(flyings.get(i).enemyBound))
                             {
                                 flyings.get(i).flyingHealth -= 1;
-                                flyings.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < goblins.size; i++)
@@ -256,7 +206,7 @@ public class Player {
                             if(AttackBound.overlaps(goblins.get(i).enemyBound))
                             {
                                 goblins.get(i).goblinHeath -= 1;
-                                goblins.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < slimes.size; i++)
@@ -264,14 +214,13 @@ public class Player {
                             if(AttackBound.overlaps(slimes.get(i).enemyBound))
                             {
                                 slimes.get(i).slimeHeath -= 1;
-                                slimes.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         if(AttackBound.overlaps(boss.bossBound))
                         {
                             boss.bossHealth -= 1;
-                            boss.hurtCounter += 1;
-                            boss.isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
                         }
                         attacked = true;
                     }
@@ -295,7 +244,7 @@ public class Player {
                             if(AttackBound.overlaps(flyings.get(i).enemyBound))
                             {
                                 flyings.get(i).flyingHealth -= 1;
-                                flyings.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < goblins.size; i++)
@@ -303,7 +252,7 @@ public class Player {
                             if(AttackBound.overlaps(goblins.get(i).enemyBound))
                             {
                                 goblins.get(i).goblinHeath -= 1;
-                                goblins.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         for(int i = 0; i < slimes.size; i++)
@@ -311,13 +260,13 @@ public class Player {
                             if(AttackBound.overlaps(slimes.get(i).enemyBound))
                             {
                                 slimes.get(i).slimeHeath -= 1;
-                                slimes.get(i).isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                                isHit = attackTime >= 0.2 && attackTime <= 0.65;
                             }
                         }
                         if(AttackBound.overlaps(boss.bossBound))
                         {
                             boss.bossHealth -= 1;
-                            boss.isHit = attackTime >= 0.2 && attackTime <= 0.65;
+                            isHit = attackTime >= 0.2 && attackTime <= 0.65;
                         }
                         attacked = true;
                     }
