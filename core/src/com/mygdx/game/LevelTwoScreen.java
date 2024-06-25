@@ -178,13 +178,22 @@ public class LevelTwoScreen implements Screen {
         //每个level的要创建的enemies在这里
         //flyings
         spawnFlying(140,120);
+        spawnFlying(400,565);
+        spawnFlying(685,565);
+        spawnFlying(943,563);
+        spawnFlying(1143,563);
+        spawnFlying(1100,199);
+        spawnFlying(1335,574);
 
         //goblins
         spawnGoblin(40, 660);
+        spawnGoblin(622, 107);
+        spawnGoblin(516, 86);
+        spawnGoblin(1240,144);
 
         //slimes
-        spawnSlime(140,160);
-
+        spawnSlime(1100,99);
+        spawnSlime(400,636);
         //boss只有一个不用多个生成
         boss = new Boss();
         newGame();
@@ -309,6 +318,7 @@ public class LevelTwoScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+        Gdx.app.log("cooder" + "x: " + player.characterX, "y: " + player.characterY);
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {
