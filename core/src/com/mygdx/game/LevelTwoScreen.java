@@ -101,7 +101,7 @@ public class LevelTwoScreen implements Screen {
         uiBatch = new SpriteBatch();
 
         //TODO Initiate the TiledMap and its renderer
-        tiledMap = new TmxMapLoader().load("Background/levelTwoMap.tmx");
+        tiledMap = new TmxMapLoader().load("Background/levelTwo.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         //Camera

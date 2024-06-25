@@ -111,7 +111,7 @@ public class GameScreen implements Screen {
         uiBatch = new SpriteBatch();
 
         //TODO Initiate the TiledMap and its renderer
-        tiledMap = new TmxMapLoader().load("Background/testMap.tmx");
+        tiledMap = new TmxMapLoader().load("Background/levelOne.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         //Camera
