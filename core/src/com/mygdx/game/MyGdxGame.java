@@ -11,7 +11,8 @@ public class MyGdxGame extends Game implements ApplicationListener {
 	public static MenuScreen menuScreen;
 	// The class with the game
 	public static GameScreen gameScreen;
-	public static Screen levelTwoScreen;
+	public static LevelTwoScreen levelTwoScreen;
+	public static BossScreen bossScreen;
 
 
 	@Override
@@ -19,11 +20,13 @@ public class MyGdxGame extends Game implements ApplicationListener {
 		Gdx.app.log("MyGdxGame: "," create");
 		gameScreen = new GameScreen(this);
 		menuScreen = new MenuScreen(this);
+		levelTwoScreen = new LevelTwoScreen(this);
+		bossScreen = new BossScreen(this);
+
 		Gdx.app.log("MyGdxGame: ","about to change screen to menuScreen");
 		// Change screens to the menu
 		setScreen(menuScreen);
 		Gdx.app.log("MyGdxGame: ","changed screen to menuScreen");
-		levelTwoScreen = new LevelTwoScreen(this);
 
 
 	}

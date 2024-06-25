@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Screen;
@@ -71,6 +72,7 @@ public class LevelTwoScreen implements Screen {
     Button attackButton;
     Button pauseButton;
     Button resumeButton;
+    Button bossLevelButton;
     Button exitToMainMenuButton;
     Button lvlTwoButton;
     boolean isResumeButtonDown = false;
@@ -78,8 +80,15 @@ public class LevelTwoScreen implements Screen {
     boolean isPauseButtonDown = false;
 
 
+    //Gate
+    Texture gateTexture;
+    Sprite gateSprite;
+    Vector2 gatePosition;
+    Rectangle gateRect;
+
     //Sound
     Sound buttonClickSound;
+    Music backgroundMusic;
 
     //Storage class for collision
     Rectangle tileRectangle;
@@ -132,6 +141,12 @@ public class LevelTwoScreen implements Screen {
         moveUpButton = new Button("", buttonSize, buttonSize*2, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
         restartButton = new Button("", w/2 - buttonSize*2, h * 0.2f, buttonSize*4, buttonSize, buttonLongTexture, buttonLongDownTexture);
 
+        //Gate
+        gateTexture = new Texture(("Background/tiles/wall/door_closed.png"));
+        gateSprite = new Sprite(gateTexture);
+        gatePosition = new Vector2(1480, 200);
+        gateRect = new Rectangle(gatePosition.x, gatePosition.y, gateSprite.getWidth(), gateSprite.getHeight());
+
         //player attack button
         float screenWidth = Gdx.graphics.getWidth() - buttonSize;
         attackButton = new Button("",screenWidth, buttonSize, buttonSize, buttonSize, buttonSquareTexture, buttonSquareDownTexture);
@@ -140,9 +155,14 @@ public class LevelTwoScreen implements Screen {
         resumeButton = new Button("      Resume", 700, 500, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
         exitToMainMenuButton = new Button("Exit to Main Menu", 700, 300, 1000, 180, menuButtonTexture, menuButtonPressedTexture);
 
+        bossLevelButton = new Button("final step to win the game", 600,100,1200,180, menuButtonTexture, menuButtonPressedTexture);
 
         //Sound
         buttonClickSound = Gdx.audio.newSound(Gdx.files.internal("clickSound.wav"));
+
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("levelTwo.wav"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.play();
 
         //Collision
         tileRectangle = new Rectangle();
@@ -281,7 +301,7 @@ public class LevelTwoScreen implements Screen {
                 restartButton.draw(uiBatch);
                 break;
             case COMPLETE:
-                lvlTwoButton.draw(uiBatch);
+                bossLevelButton.draw(uiBatch);
                 break;
         }
         uiBatch.end();
@@ -434,6 +454,10 @@ public class LevelTwoScreen implements Screen {
 
 
                 //TODO Check if player has met the winning condition
+                if (player.getBoundingBox().overlaps(gateRect)) {
+                    gameState = GameState.COMPLETE;
+
+                }
                 break;
 
             case PAUSED:
@@ -464,6 +488,11 @@ public class LevelTwoScreen implements Screen {
                 break;
 
             case COMPLETE:
+                bossLevelButton.update(checkTouch, touchX, touchY);
+                if (Gdx.input.isKeyPressed(Input.Keys.UP) || bossLevelButton.isDown) {
+                    backgroundMusic.stop();
+                    game.setScreen(MyGdxGame.bossScreen);
+                }
                 break;
         }
     }
