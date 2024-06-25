@@ -194,7 +194,7 @@ public class LevelTwoScreen implements Screen {
         spawnFlying(140,120);
 
         //goblins
-        spawnGoblin(140, 140);
+        spawnGoblin(40, 660);
 
         //slimes
         spawnSlime(140,160);
@@ -278,7 +278,7 @@ public class LevelTwoScreen implements Screen {
         //render each loop enemies
         for(int i = 0; i < flyings.size; i++)
         {
-            flyings.get(i).render(spriteBatch, player);
+            flyings.get(i).render(spriteBatch);
         }
         for(int i = 0; i < goblins.size; i++)
         {
@@ -412,48 +412,50 @@ public class LevelTwoScreen implements Screen {
                     MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
                     TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
 
-                    //TODO Determine bounds to check within
-                    // Find top-right corner tile
-                    int right = (int) Math.ceil(Math.max(player.characterX + player.playerSprite.getWidth(),player.characterX + player.playerSprite.getWidth() + player.playerDelta.x));
-                    int top = (int) Math.ceil(Math.max(player.characterY + player.playerSprite.getHeight(),player.characterY + player.playerSprite.getHeight() + player.playerDelta.y));
-
-                    // Find bottom-left corner tile
-                    int left = (int) Math.floor(Math.min(player.characterX,player.characterX + player.playerDelta.x));
-                    int bottom = (int) Math.floor(Math.min(player.characterY,player.characterY + player.playerDelta.y));
-
-                    // Divide bounds by tile sizes to retrieve tile indices
-                    right /= tileLayer.getTileWidth();
-                    top /= tileLayer.getTileHeight();
-                    left /= tileLayer.getTileWidth();
-                    bottom /= tileLayer.getTileHeight();
-
-                    //TODO Loop through selected tiles and correct by each axis
-                    //EXTRA: Try counting down if moving left or down instead of counting up
-                    for (int y = bottom; y <= top; y++) {
-                        for (int x = left; x <= right; x++) {
-                            TiledMapTileLayer.Cell targetCell = tileLayer.getCell(x, y);
-                            // If the cell is empty, ignore it
-                            if (targetCell == null) continue;
-                            // Otherwise correct against tested squares
-                            tileRectangle.x = x * tileLayer.getTileWidth();
-                            tileRectangle.y = y * tileLayer.getTileHeight();
-
-                            player.playerDeltaRectangle.x = player.characterX + player.playerDelta.x;
-                            player.playerDeltaRectangle.y = player.characterY;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.x = 0;
-
-                            player.playerDeltaRectangle.x = player.characterX;
-                            player.playerDeltaRectangle.y = player.characterY + player.playerDelta.y;
-                            if (tileRectangle.overlaps(player.playerDeltaRectangle)) player.playerDelta.y = 0;
-
-                        }
-                    }
+                    player.collisionCheck(tileRectangle, tileLayer);
 
                     //TODO Move player and camera
                     player.playerSprite.translate(player.playerDelta.x, player.playerDelta.y);
                     player.characterX += player.playerDelta.x;
                     player.characterY += player.playerDelta.y;
                     camera.translate(player.playerDelta);
+                }
+                if(flyings.size != 0 && goblins.size != 0 && slimes.size != 0 && boss.bossHealth > 0)
+                {
+                    //Retrieve Collision layer
+                    MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
+                    TiledMapTileLayer tileLayer = (TiledMapTileLayer) collisionLayer;
+
+                    for(int i = 0; i < flyings.size; i++)
+                    {
+                        flyings.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        flyings.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                        for(int j = 0; j < flyings.get(i).missiles.size; j++)
+                        {
+                            flyings.get(i).missileCollisionCheck(tileRectangle, tileLayer, flyings.get(i).missiles.get(j));
+                        }
+                    }
+                    for(int i = 0; i < goblins.size; i++)
+                    {
+                        goblins.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        goblins.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                    }
+                    for(int i = 0; i < slimes.size; i++)
+                    {
+                        slimes.get(i).collisionCheckLeft(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckRight(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckBottom(tileRectangle, tileLayer);
+                        slimes.get(i).collisionCheckTop(tileRectangle, tileLayer);
+                    }
+
+                    boss.collisionCheckLeft(tileRectangle, tileLayer);
+                    boss.collisionCheckRight(tileRectangle, tileLayer);
+                    boss.collisionCheckBottom(tileRectangle, tileLayer);
+                    boss.collisionCheckTop(tileRectangle, tileLayer);
                 }
 
 

@@ -13,11 +13,12 @@ public class Enemies {
         ATTACKING,
         WEAKING,
         IDLE,
-        FLEEING,
-        DODGING,
         WAKEUP,
-        HITTING,
-        DEATH
+        HURTING,
+        DEATH,
+        REMOVE,
+        FORCELEFTwall,
+        FORCERIGHTwall,
     }
     Array<Vector2> xyChecker = new Array<>();
     STATE currentState;
