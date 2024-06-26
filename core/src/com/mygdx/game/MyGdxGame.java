@@ -14,6 +14,10 @@ public class MyGdxGame extends Game implements ApplicationListener {
 	public static LevelTwoScreen levelTwoScreen;
 	public static BossScreen bossScreen;
 
+	public static  dieScreen dieScreen;
+
+	public static  successScreen successScreen;
+
 
 	@Override
 	public void create () {
@@ -22,6 +26,8 @@ public class MyGdxGame extends Game implements ApplicationListener {
 		menuScreen = new MenuScreen(this);
 		levelTwoScreen = new LevelTwoScreen(this);
 		bossScreen = new BossScreen(this);
+		dieScreen = new dieScreen(this);
+		successScreen = new successScreen(this);
 
 		Gdx.app.log("MyGdxGame: ","about to change screen to menuScreen");
 		// Change screens to the menu

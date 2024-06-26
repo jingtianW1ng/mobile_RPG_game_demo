@@ -1,24 +1,14 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import org.w3c.dom.Text;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
-public class MenuScreen implements Screen{
+public class successScreen implements Screen{
 
     MyGdxGame game; // Note it’s "MyGdxGame" not "Game"
     // constructor to keep a reference to the main Game class
@@ -29,41 +19,41 @@ public class MenuScreen implements Screen{
     Texture buttonLongTexture;
     Texture buttonLongDownTexture;
 
-    Texture background;
+    //Texture background;
 
-    Button playButton;
-    Button exitButton;
+    Button mainmenuButton;
 
     BitmapFont font;
 
-    Music backgroundMusic;
+    //Music backgroundMusic;
 
 
 
-    public MenuScreen(MyGdxGame game) {
+    public successScreen(MyGdxGame game) {
         this.game = game;
 
 
     }
     public void create() {
-        Gdx.app.log("MenuScreen: ","menuScreen create");
+        Gdx.app.log("successScreen: ","successscreen create");
         batch = new SpriteBatch();
         uiBatch = new SpriteBatch();
         stage = new Stage();
 
         font = new BitmapFont();
         font.getData().setScale(6,6);
-        background = new Texture("Background/menuBackground.png");
+        //background = new Texture("Background/menuBackground.png");
 
         buttonLongTexture = new Texture("UI/buttonLong_blue.png");
         buttonLongDownTexture = new Texture("UI/buttonLong_beige_pressed.png");
 
-        playButton = new Button ("Play",150,400, 600, 180, buttonLongTexture, buttonLongDownTexture);
-        exitButton = new Button ("Exit",150,400 - buttonLongTexture.getHeight()*6 , 600, 180, buttonLongTexture, buttonLongDownTexture);
+        mainmenuButton = new Button ("Bcak to Main Menu",600,400, 1050, 180, buttonLongTexture, buttonLongDownTexture);
 
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("fantacyBackgroundMusic.wav"));
-        backgroundMusic.setLooping(true);
+
+        //backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("fantacyBackgroundMusic.wav"));
+        //backgroundMusic.setLooping(true);
         //backgroundMusic.play();
+        //
 
 
     }
@@ -74,18 +64,17 @@ public class MenuScreen implements Screen{
 
         batch.begin();
 
-        font.draw(batch, "ASSIGNMENT 2", Gdx.graphics.getWidth()/2-350, Gdx.graphics.getHeight()/2+350);
+        font.draw(batch, "Congratulations You Completed Demo", Gdx.graphics.getWidth()/2-600, Gdx.graphics.getHeight()/2+350);
 
         stage.getBatch().begin();
         //draw background here
-        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        //stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         stage.getBatch().end();
 
         batch.end();
 
         uiBatch.begin();
-        playButton.draw(uiBatch);
-        exitButton.draw(uiBatch);
+        mainmenuButton.draw(uiBatch);
         uiBatch.end();
     }
     public void update(){
@@ -93,18 +82,12 @@ public class MenuScreen implements Screen{
         int touchX = Gdx.input.getX();
         int touchY = Gdx.input.getY();
 
-        playButton.update(checkTouch, touchX, touchY);
-        exitButton.update(checkTouch, touchX, touchY);
-
-        if(playButton.isDown){
-            backgroundMusic.stop();
-            game.setScreen(MyGdxGame.gameScreen);
-        }
+        mainmenuButton.update(checkTouch, touchX, touchY);
 
 
-
-        if(exitButton.isDown){
-            System.exit(0);
+        if(mainmenuButton.isDown){
+            //backgroundMusic.stop();
+            game.setScreen(MyGdxGame.menuScreen);
         }
 
 
@@ -114,7 +97,7 @@ public class MenuScreen implements Screen{
         batch.dispose();
         buttonLongTexture.dispose();
         buttonLongDownTexture.dispose();
-        backgroundMusic.dispose();
+        //backgroundMusic.dispose();
     }
     @Override
     public void resize(int width, int height) { }

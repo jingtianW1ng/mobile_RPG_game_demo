@@ -61,6 +61,8 @@ public class Player {
     float attackTime;
     boolean attacked;
 
+    boolean playerDie = false;
+
 
     //player movement delta
     float dt;
@@ -83,6 +85,8 @@ public class Player {
         {
             healthUi[i] = new Texture("UI/new_ui/health_ui/health_ui"+i+".png");
         }
+
+
 
 
         playerTexture = new Texture("Player/Idel_right/IR0.png");
@@ -199,6 +203,10 @@ public class Player {
 
     public void update(Array<Flying> flyings, Array<Goblin> goblins, Array<Slime> slimes, Boss boss)
     {
+        if (playerHealth <= 0) {
+            playerDie = true;
+        }
+
         if(state != PlayerState.attacking)
         {
             AttackBound.set(0,0,0,0);
@@ -215,10 +223,14 @@ public class Player {
                 slimes.get(i).isHit = false;
             }
             boss.isHit = false;
+
         }
         Gdx.app.log("checkH","flying heath is: " + boss.bossHealth);
 
         float dt = Gdx.graphics.getDeltaTime();
+
+
+
         switch (state)
         {
             case walkLeft:
@@ -323,6 +335,7 @@ public class Player {
                     }
                 }
                 break;
+
         }
 
     }
@@ -330,7 +343,10 @@ public class Player {
     public void render(Batch batch){
         stateTime += Gdx.graphics.getDeltaTime();
 
-        batch.draw(healthUi[playerHealth], characterX+70,characterY+70);
+        if(playerHealth >0){
+            batch.draw(healthUi[playerHealth], characterX+70,characterY+70);
+        }
+
 
         switch (state)
         {

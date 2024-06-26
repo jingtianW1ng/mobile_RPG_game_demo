@@ -12,6 +12,8 @@ public class Boss extends Enemies{
     boolean isCollisionRight;
     boolean isCollisionTop;
     boolean isCollisionBottom;
+
+
     Animation walkLeftAni;
     Animation walkRightAni;
     Animation idleLeftAni;
@@ -163,6 +165,8 @@ public class Boss extends Enemies{
 
 
     public void update(Player player){
+
+
         bossBound.setPosition(x,y);
         Gdx.app.log("dota: ", "left: " + isCollisionLeft);
         Gdx.app.log("dota: ", "right: " + isCollisionRight);

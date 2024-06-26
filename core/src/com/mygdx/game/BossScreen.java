@@ -313,6 +313,17 @@ public class BossScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+
+        if(player.playerDie){
+            game.setScreen(MyGdxGame.dieScreen);
+        }
+
+        if(boss.currentState == Enemies.STATE.REMOVE){
+
+            game.setScreen(MyGdxGame.successScreen);
+
+        }
+
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {

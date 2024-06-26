@@ -320,12 +320,20 @@ public class GameScreen implements Screen {
             case COMPLETE:
                 lvlTwoButton.draw(uiBatch);
                 break;
+
         }
         uiBatch.end();
     }
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+
+        if(player.playerDie){
+            game.setScreen(MyGdxGame.dieScreen);
+        }
+
+
+
 
         //enemies update
         for(int i = 0; i < flyings.size; i++)

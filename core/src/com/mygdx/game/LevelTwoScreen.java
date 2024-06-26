@@ -318,7 +318,6 @@ public class LevelTwoScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
-        Gdx.app.log("cooder" + "x: " + player.characterX, "y: " + player.characterY);
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {
