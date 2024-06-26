@@ -34,6 +34,7 @@ public class BossScreen implements Screen {
 
     //speed
     public static final float MOVEMENT_SPEED = 100.0f;
+    //
 
     //Map and rendering
     SpriteBatch spriteBatch;
