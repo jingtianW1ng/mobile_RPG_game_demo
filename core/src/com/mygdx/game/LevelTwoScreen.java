@@ -180,7 +180,6 @@ public class LevelTwoScreen implements Screen {
         spawnFlying(140,120);
         spawnFlying(400,565);
         spawnFlying(685,565);
-        spawnFlying(943,563);
         spawnFlying(1143,563);
         spawnFlying(1100,199);
         spawnFlying(1335,574);
@@ -194,6 +193,7 @@ public class LevelTwoScreen implements Screen {
         //slimes
         spawnSlime(1100,99);
         spawnSlime(400,636);
+        spawnSlime(943,563);
         //boss只有一个不用多个生成
         boss = new Boss();
         newGame();
