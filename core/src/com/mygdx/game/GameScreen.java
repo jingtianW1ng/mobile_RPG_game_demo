@@ -99,7 +99,6 @@ public class GameScreen implements Screen {
 
     //item
     Items redPotion;
-    Items greenPotion;
 
     Texture goblinTex;
     public GameScreen(MyGdxGame game) {this.game = game;}
@@ -168,8 +167,7 @@ public class GameScreen implements Screen {
         tileRectangle.height = tileLayer.getTileHeight();
 
         //items
-        redPotion = new Items(100,90,7,11,"Item/props_itens/potion_red.png");
-        greenPotion = new Items(150,90,7,11,"Item/props_itens/potion_green.png");
+        redPotion = new Items(0,0,7,11,"Item/props_itens/potion_red.png");
 
         //每个level的要创建的enemies在这里
         //flyings
@@ -265,7 +263,6 @@ public class GameScreen implements Screen {
 
         //items
         redPotion.render(spriteBatch);
-        greenPotion.render(spriteBatch);
 
         spriteBatch.end();
 
@@ -346,7 +343,6 @@ public class GameScreen implements Screen {
         boss.update(this.player);
         //items update
         redPotion.update();
-        greenPotion.update();
 
         //Touch Input Info
         boolean checkTouch = Gdx.input.isTouched();
@@ -462,12 +458,6 @@ public class GameScreen implements Screen {
                     if(player.playerHealth<4){
                         player.playerHealth+=1;
                         redPotion.pickUp = true;
-                    }
-                }
-                if(player.getBoundingBox().overlaps(greenPotion.getBoundingBox())){
-                    if(player.playerHealth>0){
-                        player.playerHealth-=1;
-                        greenPotion.pickUp = true;
                     }
                 }
 
