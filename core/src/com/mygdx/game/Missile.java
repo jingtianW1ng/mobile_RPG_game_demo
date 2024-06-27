@@ -22,7 +22,7 @@ public class Missile {
     public Missile()
     {
         missile = new Texture(Gdx.files.internal("Enemies/enemies/flying_creature/missile.png"));
-        speed = 30;
+        speed = 45;
         missileBound = new Rectangle(x,y,16,16);
     }
 

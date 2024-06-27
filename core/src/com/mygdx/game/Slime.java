@@ -284,6 +284,7 @@ public class Slime extends Enemies{
                 }
                 break;
             case DEATH:
+                enemyBound.set(10000,10000,0,0);
                 deathTime += dt;
                 if(isRight)
                 {
@@ -300,7 +301,6 @@ public class Slime extends Enemies{
                 }
                 break;
             case REMOVE:
-                enemyBound.set(10000,10000,0,0);
                 break;
             default:
         }

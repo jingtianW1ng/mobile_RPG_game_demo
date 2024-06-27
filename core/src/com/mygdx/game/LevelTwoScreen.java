@@ -318,6 +318,9 @@ public class LevelTwoScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+        if(player.playerDie){
+            game.setScreen(MyGdxGame.dieScreen);
+        }
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {
