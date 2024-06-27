@@ -101,7 +101,6 @@ public class GameScreen implements Screen {
     Items redPotion;
     Items greenPotion;
 
-    Texture bosstex;
     Texture goblinTex;
     public GameScreen(MyGdxGame game) {this.game = game;}
     public void create() {
@@ -216,10 +215,6 @@ public class GameScreen implements Screen {
         player.characterX = 120;
         player.characterY = 120;
 
-        //boss location
-        boss.x = 200;
-        boss.y = 140;
-
         camera.translate(player.characterX, player.characterY);
         restartActive = false;
     }
@@ -267,7 +262,6 @@ public class GameScreen implements Screen {
         {
             slimes.get(i).render(spriteBatch);
         }
-        boss.render(spriteBatch);
 
         //items
         redPotion.render(spriteBatch);
