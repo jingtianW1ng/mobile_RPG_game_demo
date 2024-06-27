@@ -165,14 +165,15 @@ public class Boss extends Enemies{
 
 
     public void update(Player player){
-
-
+        //Gdx.app.log("counter","health is: " + bossHealth);
+        //Gdx.app.log("counter",": " + player.AttackBound.overlaps(bossBound));
+        //Gdx.app.log("counter","counter is: " + hurtCounter);
+        Gdx.app.log("counter","counter is: " + player.state);
         bossBound.setPosition(x,y);
-        Gdx.app.log("dota: ", "left: " + isCollisionLeft);
-        Gdx.app.log("dota: ", "right: " + isCollisionRight);
-        Gdx.app.log("dota: ", "top: " + isCollisionTop);
-        Gdx.app.log("dota: ", "bot: " + isCollisionBottom);
-
+        if(hurtCounter >= 5)
+        {
+            this.currentState = STATE.HURTING;
+        }
         if(this.currentState != STATE.ATTACKING)
         {
             AttackBound.set(0,0,0,0);
@@ -200,12 +201,7 @@ public class Boss extends Enemies{
                 {
                     this.currentState = STATE.DEATH;
                 }
-                //check hurt counter
-                if(hurtCounter >= 5)
-                {
-                    this.currentState = STATE.HURTING;
-                    hurtCounter = 0;
-                }
+
                 //try to move near the player
                 if (isCollisionRight)
                 {
@@ -365,12 +361,6 @@ public class Boss extends Enemies{
                     this.currentState = STATE.DEATH;
                 }
 
-                if(hurtCounter >= 5)
-                {
-                    this.currentState = STATE.HURTING;
-                    hurtCounter = 0;
-                }
-
                 if(isRight)
                 {
                     //finish attack back to chasing
@@ -411,6 +401,7 @@ public class Boss extends Enemies{
                 break;
             case HURTING:
                 hurtTime += dt;
+                hurtCounter = 0;
                 if(isRight)
                 {
                     if(hurtRight.isAnimationFinished(hurtTime))
@@ -430,6 +421,7 @@ public class Boss extends Enemies{
                 break;
             case DEATH:
                 deathTime += dt;
+                bossBound.set(0,0,0,0);
                 if(isRight)
                 {
                     if(deathRight.isAnimationFinished(deathTime))
@@ -449,7 +441,6 @@ public class Boss extends Enemies{
                 break;
             case REMOVE:
                 dispose();
-                bossBound.set(0,0,0,0);
                 break;
             default:
         }
