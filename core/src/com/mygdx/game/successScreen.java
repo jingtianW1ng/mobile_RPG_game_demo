@@ -19,7 +19,7 @@ public class successScreen implements Screen{
     Texture buttonLongTexture;
     Texture buttonLongDownTexture;
 
-    //Texture background;
+    Texture background;
 
     Button mainmenuButton;
 
@@ -42,7 +42,7 @@ public class successScreen implements Screen{
 
         font = new BitmapFont();
         font.getData().setScale(6,6);
-        //background = new Texture("Background/menuBackground.png");
+        background = new Texture("Background/sucBackground.png");
 
         buttonLongTexture = new Texture("UI/buttonLong_blue.png");
         buttonLongDownTexture = new Texture("UI/buttonLong_beige_pressed.png");
@@ -68,7 +68,7 @@ public class successScreen implements Screen{
 
         stage.getBatch().begin();
         //draw background here
-        //stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
         stage.getBatch().end();
 
         batch.end();
