@@ -320,12 +320,9 @@ public class GameScreen implements Screen {
         player.update(flyings, goblins, slimes, boss);
 
         if(player.playerDie){
+            dispose();
             game.setScreen(MyGdxGame.dieScreen);
         }
-
-
-
-
         //enemies update
         for(int i = 0; i < flyings.size; i++)
         {
@@ -339,7 +336,6 @@ public class GameScreen implements Screen {
         {
             slimes.get(i).update(this.player);
         }
-
         boss.update(this.player);
         //items update
         redPotion.update();
@@ -505,6 +501,7 @@ public class GameScreen implements Screen {
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || lvlTwoButton.isDown) {
                     isLvlTwoButtonDown = true;
                     doorOpened = false;
+                    dispose();
                     game.setScreen(MyGdxGame.levelTwoScreen);
                 }
                 break;
@@ -524,7 +521,9 @@ public class GameScreen implements Screen {
         menuButtonTexture.dispose();
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
-
+        flyings.clear();
+        goblins.clear();
+        slimes.clear();
     }
     @Override
     public void resize(int width, int height) {

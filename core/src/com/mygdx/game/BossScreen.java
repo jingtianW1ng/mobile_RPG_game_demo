@@ -313,11 +313,12 @@ public class BossScreen implements Screen {
         player.update(flyings, goblins, slimes, boss);
 
         if(player.playerDie){
+            dispose();
             game.setScreen(MyGdxGame.dieScreen);
         }
 
         if(boss.currentState == Enemies.STATE.REMOVE){
-
+            dispose();
             game.setScreen(MyGdxGame.successScreen);
 
         }
@@ -508,7 +509,9 @@ public class BossScreen implements Screen {
         menuButtonTexture.dispose();
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
-
+        flyings.clear();
+        goblins.clear();
+        slimes.clear();
     }
     @Override
     public void resize(int width, int height) {

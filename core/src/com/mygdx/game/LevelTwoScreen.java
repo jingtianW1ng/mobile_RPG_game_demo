@@ -314,7 +314,9 @@ public class LevelTwoScreen implements Screen {
     public void update(){
         //player update
         player.update(flyings, goblins, slimes, boss);
+
         if(player.playerDie){
+            dispose();
             game.setScreen(MyGdxGame.dieScreen);
         }
         //enemies update
@@ -491,6 +493,7 @@ public class LevelTwoScreen implements Screen {
                 bossLevelButton.update(checkTouch, touchX, touchY);
                 if (Gdx.input.isKeyPressed(Input.Keys.UP) || bossLevelButton.isDown) {
                     backgroundMusic.stop();
+                    dispose();
                     game.setScreen(MyGdxGame.bossScreen);
                 }
                 break;
@@ -510,7 +513,9 @@ public class LevelTwoScreen implements Screen {
         menuButtonTexture.dispose();
         pauseButtonTexture.dispose();
         pauseButtonPressedTexture.dispose();
-
+        flyings.clear();
+        goblins.clear();
+        slimes.clear();
     }
     @Override
     public void resize(int width, int height) {

@@ -55,7 +55,6 @@ public class dieScreen implements Screen{
         //backgroundMusic.setLooping(true);
         //backgroundMusic.play();
 
-
     }
     public void render(float f) {
         this.update();
