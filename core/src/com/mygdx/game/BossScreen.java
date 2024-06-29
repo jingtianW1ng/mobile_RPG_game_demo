@@ -512,6 +512,7 @@ public class BossScreen implements Screen {
         flyings.clear();
         goblins.clear();
         slimes.clear();
+        backgroundMusic.stop();
     }
     @Override
     public void resize(int width, int height) {
